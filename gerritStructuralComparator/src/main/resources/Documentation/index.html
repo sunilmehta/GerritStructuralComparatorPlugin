@@ -1,0 +1,677 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Gerrit</title>
+<link rel="stylesheet" href="css/screen.css" media="screen" />
+<link rel="stylesheet" href="css/jquery.treetable.css" />
+<link rel="stylesheet" href="css/jquery.treetable.theme.default.css" />
+<link href="css/styles.css" rel="stylesheet" type="text/css">
+<link href="css/dropdown.css" title="default" rel="stylesheet"
+	type="text/css" />
+<script type="text/javascript">
+		var multiArray = "";
+		
+		var lastClickedUrl = "";
+		
+		function PatchComparison( patchSetUrl )
+		{
+			alert('patchSetUrl '+patchSetUrl+'\n'+'lastClickedUrl '+ lastClickedUrl);
+			if( patchSetUrl == lastClickedUrl ){
+			 	document.getElementById("baseVersion").innerHTML = "No Difference Found";
+			   	document.getElementById("patchVersion").innerHTML = "";
+			}else{
+				if (window.XMLHttpRequest){
+				  	xmlhttp=new XMLHttpRequest();
+				  }else{
+				 	 xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+				  }
+				xmlhttp.onreadystatechange=function(){
+				  if (xmlhttp.readyState==4 && xmlhttp.status==200){
+					  var comparatorResult = xmlhttp.responseText;
+					  parseJSONResponse( comparatorResult );
+				    }
+				  }
+				xmlhttp.open("GET","../gerritPlugin?patchSetURL1="+lastClickedUrl+"&patchSetURL2="+patchSetUrl,true);
+				xmlhttp.send();
+			}
+			lastClickedUrl = patchSetUrl;
+		}
+		
+		
+		
+		function fetchDatafromURL(url,patchNo)
+		{
+			var xmlhttp;
+			
+			lastClickedUrl = url;
+			
+			if (window.XMLHttpRequest)
+			  {
+			  	xmlhttp=new XMLHttpRequest();
+			  }
+			else
+			  {
+			 	 xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+			  }
+			xmlhttp.onreadystatechange=function()
+			  {
+			  if (xmlhttp.readyState==4 && xmlhttp.status==200)
+			    {
+				  var comparatorResult = xmlhttp.responseText;
+				  var javaCode =/JavaCode/g;
+				  var result = javaCode.test( comparatorResult );
+				  
+				  var patchSetLabel = "";
+				  for( var i = 0; i < multiArray.length ; i++ ){
+					  patchSetLabel += " ";
+					  patchSetLabel +=  multiArray[i][patchNo] ;
+				  }
+				  alert('patchSetLabel '+patchSetLabel);
+				  
+				  document.getElementById("patchSetLabel1").innerHTML = patchSetLabel;
+				  document.getElementById("patchSetLabel2").innerHTML = patchSetLabel;
+				  
+				  if( result ==  true ){
+						document.getElementById("baseVersion").innerHTML = "";
+						document.getElementById("patchVersion").innerHTML = comparatorResult;
+				  }else{
+					  parseJSONResponse( comparatorResult );
+				  }
+			    }
+			  }
+			xmlhttp.open("GET","../gerritPlugin?url="+url,true);
+			xmlhttp.send();
+		}
+		
+		
+		function parseJSONResponse( comparatorResult ){
+			 var parsedJSON = JSON.parse(comparatorResult);
+			  var baseVersion="", patchVersion="";
+			  
+			  // package name changes
+			  if( parsedJSON.pkg.diff == -1 || parsedJSON.pkg.diff == 10 || parsedJSON.pkg.diff == 1){
+				  baseVersion += parsedJSON.pkg.lines[0].value;
+				  patchVersion +=  parsedJSON.pkg.lines[1].value;
+			  } 
+			  
+			  // changes in Import statement
+			  for (var i = 0; i < parsedJSON.imports.length ; i++){
+				  if ( parsedJSON.imports[i].diff == 1 ) {
+					  baseVersion += '\n';
+					  baseVersion +=  parsedJSON.imports[i].lines[0].value;
+					  patchVersion += '\n';
+				  }else if (  parsedJSON.imports[i].diff == -1 ){
+					  baseVersion += '\n';
+					  patchVersion += '\n';
+					  patchVersion +=  parsedJSON.imports[i].lines[1].value;
+				  }else if (  parsedJSON.imports[i].diff == 10 ){
+					  baseVersion += '\n';
+					  baseVersion +=  parsedJSON.imports[i].lines[0].value;
+					  patchVersion += '\n';
+					  patchVersion +=  parsedJSON.imports[i].lines[1].value;
+				  }
+			  }
+			  
+			  // Changes in program body
+			   	for (var i = 0; i < parsedJSON.types.length ; i++){
+			   		 if ( parsedJSON.types[i].diff == 1 ) {
+			   			  baseVersion += '...\n';
+						  baseVersion += parsedJSON.types[i].declarations[0].completeNodeValue ;
+						  patchVersion += '\n';
+			   		}else if ( parsedJSON.types[i].diff  == -1 ){
+						  baseVersion += '\n';
+						  patchVersion += '\n';
+						  patchVersion +=  parsedJSON.types[i].declarations[1].completeNodeValue;
+					  }else if ( parsedJSON.types[i].diff  == 10 ){
+						  alert('parsedJSON.types[i].commonChilds.length '+parsedJSON.types[i].commonChilds.length);
+						  for ( var k=0; k < parsedJSON.types[i].commonChilds.length; k++){
+							 if( parsedJSON.types[i].commonChilds[k].diff == 10 ){
+								 var commonChilds = parsedJSON.types[i].commonChilds[k].commonChilds;
+								 alert('commonChilds '+commonChilds.length);
+								 alert('commonChilds diff '+commonChilds[0].diff);
+								 for( var x=0; x < commonChilds.length; x++ ){
+									 if ( commonChilds[x].diff == 1 ) {
+										  alert('commonChilds[x].declarations[0].completeNodeValue '+commonChilds[x].declarations[0].completeNodeValue);
+										 /*  baseVersion += '\n';
+										  baseVersion += commonChilds[x].declarations[0].completeNodeValue;
+										  patchVersion += '\n'; */
+									  }else if ( commonChilds[x].diff == -1 ){
+										  alert('commonChilds[x].declarations[0].completeNodeValue '+commonChilds[x].declarations[1].completeNodeValue);
+										 /*  baseVersion += '\n';
+										  patchVersion += '\n';
+										  patchVersion +=  commonChilds[x].declarations[1].completeNodeValue; */
+									  }
+								 }
+							 }
+						  }
+						  
+						  
+						  baseVersion += '\n';
+						  baseVersion +=  parsedJSON.types[i].declarations[0].completeNodeValue;
+						  patchVersion += '\n';
+						  patchVersion +=  parsedJSON.types[i].declarations[1].completeNodeValue; 
+					  }
+			   	}
+			  	if( baseVersion == "" && patchVersion == ""){
+			  		baseVersion = "No changes Found";
+			  		patchVersion = "No changes Found";
+			  	}
+			  	
+			   	document.getElementById("baseVersion").innerHTML = baseVersion;
+			   	document.getElementById("patchVersion").innerHTML = patchVersion;
+		}
+		
+		
+		
+		
+		
+		
+		function getChangeIdDetails()
+		{
+			var listItems= "";
+			var xmlhttp;
+			if (window.XMLHttpRequest)
+			  {	// code for IE7+, Firefox, Chrome, Opera, Safari
+			  	xmlhttp=new XMLHttpRequest();
+			  }
+			else
+			  {	// code for IE6, IE5
+			  	xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+			  }
+			xmlhttp.onreadystatechange=function()
+			  {
+			  if (xmlhttp.readyState==4 && xmlhttp.status==200)
+			    {
+			    	var jsonData = xmlhttp.responseText;
+			    	if(document.getElementById("changeId").value == ""){
+				    	var parsedJSON = JSON.parse(xmlhttp.responseText).changeIDs;
+				    	var parsedChangeJSON = JSON.parse(xmlhttp.responseText).change;
+				    	for (var i = 0; i < parsedJSON.length ; i++){
+				    	      listItems+= "<option value='" + parsedJSON[i].change_id + "'>" + parsedJSON[i].change_id + "</option>";
+				    	    }
+				    	document.getElementById("changeId").innerHTML = listItems;
+			    	}
+			    		var parsedChangeJSON = JSON.parse(xmlhttp.responseText).change;
+			    		document.getElementById("owner").innerHTML= parsedChangeJSON.owner;
+			    		document.getElementById("uploadedon").innerHTML= parsedChangeJSON.creationDate;
+			    		document.getElementById("updatedon").innerHTML= parsedChangeJSON.lastUpdationDate;
+			    		document.getElementById("branch").innerHTML= parsedChangeJSON.branch;
+			    		document.getElementById("project").innerHTML= parsedChangeJSON.projectName;
+			    		document.getElementById("commitmsg").innerHTML= parsedChangeJSON.subject;
+			    		/* var filename = parsedChangeJSON.patchSets[0];
+			    		alert('Patch File Name '+filename.patchFileName ); */
+			    		var totalPatchSet = parsedChangeJSON.patchSets.length;
+			    		multiArray =  new Array(totalPatchSet);
+			    		for (var i = 0; i < parsedChangeJSON.patchSets.length ; i++){
+			    			var patch= parsedChangeJSON.patchSets[i];
+			    			var tbody = "<tbody id=\"patchset"+ (i+1) +"\"><tr data-tt-id='1'><td><span class='folder'>Patch"+ (i+1) +"</span></td></tr>";
+			    			var totalPatches = patch.patchList.length;
+			    			multiArray[i] =  new Array( totalPatches );
+			    			for (var j = 0; j < patch.patchList.length ; j++){
+			    				tbody += "<tr><td><a onclick=\"fetchDatafromURL('"+ patch.patchList[j].fileURL +"','" + j + "')\"> " +patch.patchList[j].patchFileName + "</a></td></tr>"
+			    				multiArray[i][j] = "<a onclick=\"PatchComparison('"+ patch.patchList[j].fileURL + "')\"> " + (i+1) + "</a>"
+			    			}
+			    			var id = "patchset"+(i+1);
+			    			tbody+= "</tbody>";
+			    		//	alert('tbody '+tbody);
+			    			document.getElementById(id).innerHTML= tbody;
+			    		}
+			    		
+			    		/*  for(var i = 0; i < parsedChangeJSON.patchSets.length ; i++){
+			    			var patch= parsedChangeJSON.patchSets[i];
+			    			for (var j = 0; j < patch.patchList.length ; j++){
+			    				alert('MultiArray'+j+' '+i+' ::'+multiArray[j][i]);
+			    			}
+			    		} 
+			    		 */
+			    }
+			}
+			if(document.getElementById("changeId").value == ""){
+				xmlhttp.open("GET","../gerritPlugin",true);
+			}else{
+				xmlhttp.open("GET","../gerritPlugin?id="+document.getElementById("changeId").value,true);
+			}
+			xmlhttp.send();	
+		}
+</script>
+</head>
+<body onload="getChangeIdDetails()">
+	<div class="container">
+		<!-- *************************************** HEADER  -->
+		<header class="header">
+			<!-- Short Profile Default Section Starts -->
+			<div class="profileSection">
+				<nav role="navigation">
+					<ul class="main-nav">
+						<li><a href="#">All <i class="icon-chevron-down"></i></a>
+							<div class="dropdown">
+								<em class="subMenuTopArrow"></em>
+								<ul class="subMenu">
+									<li><a href="#">Open</a></li>
+									<li><a href="#">Merged</a></li>
+									<li><a href="#">Abandoned</a></li>
+								</ul>
+							</div></li>
+						<li><span class="vrLine"> | </span></li>
+						<li><a href="#">Projects <i class="icon-chevron-down"></i></a>
+							<div class="dropdown">
+								<em class="subMenuTopArrow"></em>
+								<ul class="subMenu">
+									<li><a href="#">List</a></li>
+								</ul>
+							</div></li>
+						<li><span class="vrLine"> | </span></li>
+						<li><a href="#">Documentation <i
+								class="icon-chevron-down"></i></a>
+							<div class="dropdown">
+								<em class="subMenuTopArrow"></em>
+								<ul class="subMenu">
+									<li><a href="#">Index</a></li>
+									<li><a href="#">Searching</a></li>
+									<li><a href="#">Uploading</a></li>
+									<li><a href="#">Access Controls</a></li>
+								</ul>
+							</div></li>
+					</ul>
+				</nav>
+				<p role="modified">
+					Uploaded : <span id="uploadedon">Apr 1, 2013 2:04 AM</span> Updated : <span id="updatedon">Apr
+						1, 2013 2:04 AM</span>
+				</p>
+				<div role="user-account">
+					<nav role="navigation">
+						<ul class="user-nav">
+							<li><a href="#">Steffen Pingel <i
+									class="icon-chevron-down"></i></a>
+								<div class="dropdown">
+									<em class="subMenuTopArrow"></em>
+									<ul class="subMenu">
+										<li><a href="#">My Profile</a></li>
+										<li><a href="#">Change Password</a></li>
+									</ul>
+								</div></li>
+							<li>
+								<button value="logout" class="button secondary logoutButton">SIGNOUT</button>
+							</li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+			<!-- Short Profile Default Section Ends -->
+
+			<!-- Full Profile Section Show/Hide Panel Starts -->
+			<div class="showContent">
+
+				<!-- Full Profile Split Controller Starts -->
+				<div class="splitter vr_spliter vrSplitBar">
+					<div class="vrSplitWrapper">
+
+						<em class="tinyDot"></em> <i class="icon-chevron-up"></i> <i
+							class="icon-chevron-down"></i> <em class="tinyDot"></em>
+
+					</div>
+				</div>
+				<!-- Full Profile Split Controller Ends -->
+
+				<!-- Full Profile Details Starts -->
+				<div class="content">
+					<div class="headerContent">
+						<div class="ownerInfo">
+							<div role="owner-name">
+								<img src="images/profilePic.png" /> <span> <a id="owner" href="#">Steffen
+										Pingel</a> OWNER
+								</span>
+							</div>
+
+							<div role="owner-info">
+								<div class="lFloat col col1">
+									<div class="ownerInfoRow">
+										<label>Change-Id</label>
+										<p><select id="changeId" onchange="getChangeIdDetails()"><option value="">No ChangeId Found</option></select></p>
+									</div>
+
+									<div class="ownerInfoRow">
+										<label>Project</label>
+										<p>
+											<a id="project" href="#">mylyn/org.eclipse.mylyn.incubator</a>
+										</p>
+									</div>
+
+									<div class="ownerInfoRow">
+										<label>Branch</label>
+										<p>
+											<a href="#" id="branch">master</a>
+										</p>
+									</div>
+
+									<div class="ownerInfoRow">
+										<label>Topic</label>
+										<p></p>
+									</div>
+								</div>
+								<div class="lFloat col col2">
+									<div class="ownerInfoRow">
+										<label>Commit Msg</label>
+										<p id="commitmsg">383907:.. \minimum JRE to 1.6</p>
+									</div>
+
+									<div class="ownerInfoRow">
+										<label>Task URL</label>
+										<p>
+											<a href="#">bugs.eclipse.org/bugs/show_bug.cgi?id=383907</a>
+										</p>
+									</div>
+								</div>
+
+
+							</div>
+						</div>
+
+						<div class="reviewWrapper">
+							<div role="task-status">
+								<img src="images/progressInReview.png" />
+							</div>
+							<div role="reviwers">
+								<span> Reviewing by :</span> <span role="reviwer-names"><i
+									class="icon-chevron-right"></i> <a href="#">John Doe</a>, <a
+									href="#">John Doe</a>, <a href="#">John Doe</a></span>
+								</ul>
+							</div>
+						</div>
+
+					</div>
+				</div>
+				<!-- Full Profile Details Starts -->
+
+			</div>
+			<!-- Full Profile Section Show/Hide Panel Ends -->
+
+		</header>
+
+		<!-- ****************************************************************** LEFT PANEL (TREE & LIVE STREAMING)   -->
+		<section class="navigation hideComments">
+			<div id="navController" class="expandTree">
+
+				<div class="showContent">
+
+					<div class="splitter hr_spliter hrSplitBar" name="vrHalfSpliter">
+						<div class="hrSplitWrapper">
+
+							<em class="tinyDot"></em> <i class="icon-chevron-left"></i> <i
+								class="icon-chevron-right"></i> <em class="tinyDot"></em>
+
+						</div>
+					</div>
+
+					<div class="content">
+						<div class="navigationWrapper">
+
+							<div class="patches">
+								<div class="fileNotFoundValid">
+
+									<i class="icon-exclamation-sign"></i>Oooops! File not found!
+								</div>
+
+								<div class="overlay"></div>
+								<div class="patchesPanel">
+									<div class="patchesWrapper">
+										<span class="commentCounts commentCountsOn"> <a
+											href="#">125</a>
+										</span>
+										<div class="dropdown dropdownDefaultValue">
+											<div role="selected">
+												<a href="#"><i class="icon-chevron-down"></i><span
+													class="label" id="checkCurrentPatch">Patch 1</span></a>
+											</div>
+											<div role="options">
+												<ul class="subMenu">
+													<li><a href="#" data-dd-id='patch1'>Patch 1</a></li>
+													<li><a href="#" data-dd-id='patch2'>Patch 2</a></li>
+													<li><a href="#" data-dd-id='patch3'>Patch 3</a></li>
+													<li><a href="#" data-dd-id='patch4'>Patch 4</a></li>
+												</ul>
+											</div>
+										</div>
+
+									</div>
+									<div class="search-container">
+										<input type="text" value="" class="inputText" id="search"
+											placeholder="Start Searching â¦" name="term" id="term"
+											autocomplete="off">
+										<button class="image-button search no-margin"
+											id="searchAction" type="submit">Search</button>
+									</div>
+								</div>
+
+								<div class="treeStructure">
+									<table id="patch1" cellpadding="0" cellspacing="0">
+
+										 <tbody id="patchset1">
+											<tr data-tt-id='1'>
+												<td><span class='folder'>Patch 1</span></td>
+											</tr>
+											<tr data-tt-id='1-1' data-tt-parent-id='1'>
+												<td><span class='folder'>Images</span></td>
+											</tr>
+											<tr data-tt-id='1-1-1' data-tt-parent-id='1-1'>
+												<td><span class='folder'>BigImages</span></td>
+											</tr>
+											<tr data-tt-id='1-1-1-1' data-tt-parent-id='1-1-1'>
+												<td class="modified comment"><span class='file'>PNG
+														File.png</span></td>
+											</tr>
+											<tr data-tt-id='1-1-1-2' data-tt-parent-id='1-1-1'>
+												<td class="deleted comment"><span class='file'>PNG
+														File.png</span></td>
+											</tr>
+											<tr data-tt-id='1-1-1-3' data-tt-parent-id='1-1-1'>
+												<td class="new comment"><span class='file'>GIF
+														File.gif</span></td>
+											</tr>
+
+											<tr data-tt-id='1-2' data-tt-parent-id='1'>
+												<td><span class='folder'>PDF</span></td>
+											</tr>
+											<tr data-tt-id='1-2-1' data-tt-parent-id='1-2'>
+												<td><span class='file'>BlueWhale.pdf</span></td>
+											</tr>
+											<tr data-tt-id='1-2-2' data-tt-parent-id='1-2'>
+												<td><span class='file'>Shark.pdf</span></td>
+											</tr>
+											<tr data-tt-id='1-3' data-tt-parent-id='1'>
+												<td><span class='folder'>Code/Text/Styles</span></td>
+											</tr>
+											<tr data-tt-id='1-3-1' data-tt-parent-id='1-3'>
+												<td><span class='file'>PHTML.html</span></td>
+											</tr>
+											<tr data-tt-id='1-3-2' data-tt-parent-id='1-3'>
+												<td><span class='file'>PHP.js</span></td>
+											</tr>
+											<tr data-tt-id='1-3-3' data-tt-parent-id='1-3'>
+												<td><span class='file'>JS.js</span></td>
+											</tr>
+											<tr data-tt-id='1-3-4' data-tt-parent-id='1-3'>
+												<td><span class='file'>CSS.css</span></td>
+											</tr>
+											<tr data-tt-id='1-3-5' data-tt-parent-id='1-3'>
+												<td><span class='file'>ASP.asp</span></td>
+											</tr>
+											<tr data-tt-id='1-3-6' data-tt-parent-id='1-3'>
+												<td><span class='file'>Java.jsp</span></td>
+											</tr>
+											<tr data-tt-id='1-3-7' data-tt-parent-id='1-3'>
+												<td class="modified comment"><span class='file'>Properties</span></td>
+											</tr>
+											<tr data-tt-id='1-3-8' data-tt-parent-id='1-3'>
+												<td><span class='file'>Text.txt</span></td>
+											</tr>
+											<tr data-tt-id='1-4' data-tt-parent-id='1'>
+												<td><span class='folder'>Zip/Jar/Rar/Compresed</span></td>
+											</tr>
+											<tr data-tt-id='1-4-1' data-tt-parent-id='1-4'>
+												<td><span class='file'>fullProject.zip</span></td>
+											</tr>
+											<tr data-tt-id='1-4-2' data-tt-parent-id='1-4'>
+												<td><span class='file'>Module.rar</span></td>
+											</tr>
+											<tr data-tt-id='1-4-3' data-tt-parent-id='1-4'>
+												<td><span class='file'>Build.jar</span></td>
+											</tr>
+											<tr data-tt-id='1-4-4' data-tt-parent-id='1-4'>
+												<td><span class='file'>Private.dmg</span></td>
+											</tr>
+
+
+										</tbody> 
+									</table>
+
+
+									<table id="patch2" cellpadding="0" cellspacing="0">
+
+										<tbody id="patchset2">
+											<tr data-tt-id='1'>
+												<td><span class='folder'>Patch 2</span></td>
+											</tr>
+											<tr data-tt-id='1-1' data-tt-parent-id='1'>
+												<td><span class='folder'>Images</span></td>
+											</tr>
+											<tr data-tt-id='1-1-1' data-tt-parent-id='1-1'>
+												<td><span class='folder'>BigImages</span></td>
+											</tr>
+											<tr data-tt-id='1-1-1-1' data-tt-parent-id='1-1-1'>
+												<td class="modified comment"><span class='file'>JPG
+														File.jpg</span></td>
+											</tr>
+											<tr data-tt-id='1-1-1-2' data-tt-parent-id='1-1-1'>
+												<td class="deleted comment"><span class='file'>PNG
+														File.png</span></td>
+											</tr>
+											<tr data-tt-id='1-1-1-3' data-tt-parent-id='1-1-1'>
+												<td class="new comment"><span class='file'>GIF
+														File.gif</span></td>
+											</tr>
+
+											<tr data-tt-id='1-2' data-tt-parent-id='1'>
+												<td><span class='folder'>PDF</span></td>
+											</tr>
+											<tr data-tt-id='1-2-1' data-tt-parent-id='1-2'>
+												<td><span class='file'>BlueWhale.pdf</span></td>
+											</tr>
+											<tr data-tt-id='1-2-2' data-tt-parent-id='1-2'>
+												<td><span class='file'>Shark.pdf</span></td>
+											</tr>
+											<tr data-tt-id='1-3' data-tt-parent-id='1'>
+												<td><span class='folder'>Code/Text/Styles</span></td>
+											</tr>
+											<tr data-tt-id='1-3-1' data-tt-parent-id='1-3'>
+												<td><span class='file'>PHTML.html</span></td>
+											</tr>
+											<tr data-tt-id='1-3-2' data-tt-parent-id='1-3'>
+												<td><span class='file'>PHP.js</span></td>
+											</tr>
+											<tr data-tt-id='1-3-3' data-tt-parent-id='1-3'>
+												<td><span class='file'>JS.js</span></td>
+											</tr>
+											<tr data-tt-id='1-3-4' data-tt-parent-id='1-3'>
+												<td><span class='file'>CSS.css</span></td>
+											</tr>
+
+
+										</tbody>
+									</table>
+
+									<table id="patch3" cellpadding="0" cellspacing="0">
+										<tbody id="patchset3">
+										
+										</tbody>
+									</table>
+								</div>
+							</div>
+
+							<div class="liveStreaming">
+								<div class="showContent">
+
+									<div class="splitter vr_spliter vrSplitBar" id="splitHalf">
+										<div class="vrSplitWrapper">
+
+											<em class="tinyDot"></em> <i class="icon-chevron-up"></i> <i
+												class="icon-chevron-down"></i> <em class="tinyDot"></em>
+
+										</div>
+									</div>
+
+									<div class="content">
+										<div class="liveStreamList"></div>
+									</div>
+
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="copyright">Copyright &copy; 2013 imaginea</div>
+			</div>
+
+
+		</section>
+
+		<section class="main">
+			<div class="mainContianer">
+				<div class="zoomAction">
+					<ul class="showFullScreen">
+						<li class="controlScreen fullScreen"><i
+							class="icon-fullscreen"></i></li>
+						<li class="controlScreen resizeScreen"><i
+							class="icon-resize-small"></i></li>
+					</ul>
+
+				</div>
+				<!-- <div class="playGround">
+
+					Gold futures in India, the world's biggest buyer of the metal,
+					dropped nearly 3 percent to hit their lowest level in 15-1/2
+					months, mirroring losses in the world market. (Photo: Reuters
+					Pictures) Gold futures in India, the world's biggest buyer of the
+					metal, dropped nearly 3 percent to hit their lowest level in 15-1/2
+					months, mirroring losses in the world market. (Photo: Reuters
+					Pictures) Gold futures in India, the world's biggest buyer of the
+					metal, dropped nearly 3 percent to hit their lowest level in 15-1/2
+					months, mirroring losses in the world market. (Photo: Reuters
+					Pictures) Gold futures in India, the world's biggest buyer of the
+					metal, dropped nearly 3 percent to hit their lowest level in 15-1/2
+					months, mirroring losses in the world market. (Photo: Reuters
+					Pictures)
+				</div> -->
+				
+				<table border="1">
+				<tr>
+					<td> PatchSet <span id="patchSetLabel1"></span>
+					</td>
+					<td> PatchSet  <span id="patchSetLabel2"></span>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<textarea  readonly="readonly" id="baseVersion" rows="25" cols="60"></textarea>
+					</td>
+					<td>
+						<textarea  readonly="readonly" id="patchVersion" rows="25" cols="60"></textarea>
+					</td>
+				</tr>
+				</table>
+			</div>
+
+		</section>
+
+	</div>
+
+
+	<script src="js/jquery.js"></script>
+	<script src="js/jquery-ui.js"></script>
+	<script src="js/jquery.treetable.js"></script>
+	<script type="text/javascript" src="js/dropdown.js"></script>
+	<script src="js/script.js"></script>
+</body>
+</html>

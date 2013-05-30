@@ -1,0 +1,174 @@
+/*!
+ * jQuery Dropdown
+ * http://blog.gatherage.com/jquery-select-dropdown
+ *
+ * Copyright 2011, Rob Rothermel
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl-2.0.html
+ *
+ * Date: Thu May 12 2011 17:36:29 GMT-0400 (EST)
+ */
+.dropdown div[role="options"], .dropdown div[role="selected"], .dropdown ul {
+    margin: 0;
+    padding:0;
+}
+
+.dropdown div[role="options"] {
+    position: absolute;
+    z-index: 100;
+	top:30px;
+}
+.dropdown a, .dropdown a:visited {
+    text-decoration: none;
+    outline: none;
+}
+.dropdown div[role="selected"] a:hover, .dropdown div[role="selected"] a:focus, div.dropdownActive div[role="selected"] a {
+
+}
+
+.dropdown div[role="selected"]{
+	padding-left: 16px;
+	position:relative;
+}
+
+
+.dropdown div[role="selected"] a, .dropdown div[role="selected"] a span.label {
+    -o-background-size: 100% 100%;
+    -moz-background-size: 100% 100%;
+    -webkit-background-size: 100% 100%;
+    background-size: 100% 100%;
+}
+.dropdown div[role="selected"] a {
+    display: block;
+	float:left;
+    }
+    .dropdownActive div[role="selected"] a {
+	-webkit-border-radius: 4px 4px 0 0;
+	-moz-border-radius: 4px 4px 0 0;
+	border-radius: 4px 4px 0 0;
+    }
+    .dropdownDefaultValue div[role="selected"] a, .dropdownDefaultValue div[role="selected"] a:visited {
+
+	}
+	div.dropdownDefaultValue div[role="selected"] a:hover, div.dropdownDefaultValue:hover div[role="selected"] a {
+
+	}
+.dropdown div[role="selected"] a, .dropdownActive div[role="options"] ul {
+}
+.dropdown div[role="selected"] a span {
+    vertical-align: middle;
+    display: -moz-inline-block;
+    display: inline-block;
+    cursor: pointer;
+	font-weight:bold;
+	font-size:15px;
+    }
+    .dropdown div[role="selected"] a span.label {
+	padding: 2px 5px;
+	line-height: 16px;
+	overflow: hidden;
+	white-space: nowrap;
+	}
+	.dropdownActive div[role="selected"] a span.label {
+	    -webkit-border-radius: 4px 0 0 4px;
+	    -moz-border-radius: 4px 0 0 4px;
+	    border-radius: 4px 0 0 4px;
+	}
+    .dropdown div[role="selected"] a span.arrow {
+	background: url(../images/arrow.gif) no-repeat 50% 50%;
+	width: 16px;
+	height: 5px;
+    }
+.dropdown div[role="options"] ul {
+    -webkit-border-radius: 0 0 4px 4px;
+    -moz-border-radius: 0 0 4px 4px;
+    border-radius: 0 0 4px 4px;
+    display: none;
+    left: 0;
+    top: 0;
+    width: auto;
+    min-width: 163px;
+    white-space: nowrap;
+    list-style: none;
+    padding:0;
+    position: absolute;
+    z-index: 2002;
+    max-height: 240px;
+    overflow: auto;
+    -ms-zoom: 1;
+	    background-color: #FFFFFF;
+    border: 1px solid rgba(35, 35, 35, 0.2);
+    box-shadow: 2px 2px 0 0 rgba(35, 35, 35, 0.1);
+    }
+    .dropdownActive div[role="options"] ul {
+	display: block;
+	}
+	.dropdownActive div[role="options"] ul ul {
+	    position: static;
+	    -webkit-box-shadow: none;
+	    -moz-box-shadow: none;
+	    box-shadow: none;
+	    border: 0;
+	    margin-right: -12px;
+	}
+    * html .dropdown div[role="options"] ul {
+	padding: 0;
+	zoom: 1;
+	width: 240px;
+    }
+.dropdown div[role="options"] ul li strong {
+    display: block;
+    padding-left: 5px;
+    cursor: default;
+}
+
+.dropdown div[role="options"] ul li{
+    font-size: 18px;
+}
+
+.dropdown div[role="options"] ul li a {
+	padding: 6px 5px;
+    display: block;
+    font-size: 15px;
+	margin:3px;
+    }
+    .dropdown div[role="options"] ul ul li a {
+	padding-left: 15px;
+    }
+    * html .dropdown div[role="options"] ul li a {
+	margin-right: 0;
+    }
+.dropdown div[role="options"] ul li a:hover {
+	font-weight:bold;
+}
+    .dropdown div[role="options"] > ul:last-child > li:last-child > a:hover, .dropdown div[role="options"] > ul:last-child > li:last-child > ul:last-child > li:last-child > a:hover {
+	-webkit-border-radius: 0 0 4px 4px;
+	-moz-border-radius: 0 0 4px 4px;
+	border-radius: 0 0 4px 4px;
+    }
+
+div.dropdown {
+    float: left;
+    height: inherit;
+    position: relative;
+}
+
+.dropdown .icon-chevron-down{
+    background: none repeat scroll 0 0 #333333;
+    border-radius: 3px 3px 3px 3px;
+    color: #FFFFFF;
+    display: inline-block !important;
+    font-size: 11px;
+    height: 8px;
+    left: 2px;
+    padding: 2px 3px 4px;
+    position: absolute;
+    top: 2px;
+}
+
+.dropdown:hover .icon-chevron-down,
+.dropdownActive .icon-chevron-down{
+    background: none repeat scroll 0 0 #FFFFFF;
+    color: #333333;
+}

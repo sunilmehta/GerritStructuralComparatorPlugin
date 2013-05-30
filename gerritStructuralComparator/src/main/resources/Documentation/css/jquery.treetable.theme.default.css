@@ -1,0 +1,113 @@
+table.treetable {
+  border-collapse: collapse;
+  line-height: 1;
+  width: 100%;
+}
+
+table.treetable caption {
+   display: block;
+    font-size: 0.9em;
+    font-weight: bold;
+    margin-bottom: 0.2em;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 209px;
+}
+
+table.treetable thead {
+  background: #aaa url(../images/bg-table-thead.png) repeat-x top left;
+  font-size: .9em;
+  display:none;
+}
+
+table.treetable thead tr th {
+  border: 1px solid #888;
+  font-weight: normal;
+  padding: .3em 1em .1em 1em;
+  text-align: left;
+}
+
+table.treetable tbody tr td {
+  cursor: default;
+  padding: .5em 1em;
+  white-space:nowrap;
+}
+
+table.treetable tbody tr td + td{
+	display:none;
+}
+
+
+table.treetable span {
+  background-position: center left;
+  background-repeat: no-repeat;
+  padding: .2em 0 .2em 1.7em;
+}
+
+table.treetable span.file {
+  background-image: url(../images/file.png);
+}
+
+table.treetable .image span.file{
+  background-image: url(../images/image.png);
+}
+
+table.treetable .image.modified span.file{
+  background-image: url(../images/imageModified.png);
+}
+
+table.treetable .image.deleted span.file{
+  background-image: url(../images/imageDeleted.png);
+}
+
+
+table.treetable .image.new span.file{
+  background-image: url(../images/imageNew.png);
+}
+
+table.treetable .pdf span.file{
+  background-image: url(../images/pdf.png);
+}
+
+table.treetable .zip span.file{
+  background-image: url(../images/zip.png);
+}
+
+table.treetable span.folder {
+  background-image: url(../images/folder.png);
+}
+
+table.treetable tr.collapsed span.indenter a {
+  background-image: url(../images/expand.png);
+}
+
+table.treetable tr.expanded span.indenter a {
+  background-image: url(../images/collapse.png);
+}
+
+table.treetable tr.selected {
+  background-color: #3875d7;
+  color: #fff;
+}
+
+table.treetable tr.collapsed.selected span.indenter a {
+  background-image: url(../images/expand-light.png);
+}
+
+table.treetable tr.expanded.selected span.indenter a {
+  background-image: url(../images/collapse-light.png);
+}
+
+table.treetable tr.accept {
+  background-color: #a3bce4;
+  color: #fff
+}
+
+table.treetable tr.collapsed.accept td span.indenter a {
+  background-image: url(../images/expand-light.png);
+}
+
+table.treetable tr.expanded.accept td span.indenter a {
+  background-image: url(../images/collapse-light.png);
+}

@@ -1,0 +1,111 @@
+package com.imaginea.structuralComaparator.test;
+
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.imaginea.structuralComaparator.domain.ComparisonResult;
+import com.imaginea.structuralComaparator.domain.Import;
+import com.imaginea.structuralComaparator.domain.Type;
+import com.imaginea.structuralComaparator.repo.ComparatorImpl;
+
+interface abc{
+	
+}
+
+abstract class bac{
+	
+}
+enum en { 
+	apple,appl;
+}
+
+public class StructuralComapareTest extends bac  implements abc{
+	
+	int value = 0;
+	int[] arr = {1,2};
+
+	@Test
+	public final void assertPackageEqual() {
+		ComparatorImpl comparator = new ComparatorImpl();
+		ComparisonResult result = comparator.compare("src/test/java/com/imaginea/structuralComaparator/test/StructuralComapareTest.java",
+				"src/main/java/com/imaginea/structuralComaparator/repo/JavaParser.java");
+		short diff = result.getPkg().getDiff();
+		if (diff == 0)
+			Assert.assertTrue("Both the packages are same", true);
+		else
+			Assert.assertFalse("Both the Packages are not same", false);
+	}
+
+	@Test
+	public final void assertImportsEqual() {
+		ComparatorImpl comparator = new ComparatorImpl();
+		ComparisonResult result = comparator.compare("src/test/java/com/imaginea/structuralComaparator/test/StructuralComapareTest.java",
+				"src/test/java/com/imaginea/structuralComaparator/test/StructuralComapareTest.java");
+		// "src/main/java/com/imaginea/structuralComaparator/repo/JavaParser.java");
+		List<Import> imports = result.getImports();
+		isImportsDifferent(imports);
+	}
+
+	void isImportsDifferent(List<Import> imports) {
+		for (Import imp : imports)
+			if (imp.getDiff() != 0)
+				Assert.fail("Imports are different: " + imp);
+	}
+
+	@Test
+	public final void assertTypesEqual() {
+		ComparatorImpl comparator = new ComparatorImpl();
+		ComparisonResult result = comparator.compare("src/test/java/com/imaginea/structuralComaparator/test/StructuralComapareTest.java",
+				"src/test/java/com/imaginea/structuralComaparator/test/StructuralComapareTest.java");
+				// "src/main/java/com/imaginea/structuralComaparator/repo/JavaParser.java");
+		List<Type> types = result.getTypes();
+		isTypesDifferent(types);
+	}
+
+	private void isTypesDifferent(List<Type> types) {
+		for (Type type : types)
+			if (type.getDiff() != 0)
+				Assert.fail("Imports are different: " + type);
+	}
+
+	static void testTypes() {
+		ComparatorImpl comparator = new ComparatorImpl();
+		ComparisonResult result = comparator.compare(
+				"src/test/java/com/imaginea/structuralComaparator/test/StructuralComapareTest.java",
+//				"F:/Workspace/structuralComaparator/src/test/java/com/imaginea/structuralComaparator/test/StructuralComapareTest.java");
+				"src/test/resources/TestJavaFiles/Testing.java.txt");
+		List<Type> types = result.getTypes();
+		for (Type type : types) {
+			System.out.println(type);
+
+		}
+	}
+	
+	static void testImports() {
+		ComparatorImpl comparator = new ComparatorImpl();
+		ComparisonResult result = comparator.compare(
+				"F:/Workspace/structuralComaparator/src/test/java/com/imaginea/structuralComaparator/test/StructuralComapareTest.java",
+				"F:/Workspace/structuralComaparator/src/test/java/com/imaginea/structuralComaparator/test/StructuralComapareTest.java");
+				// "F:/Workspace/structuralComaparator/src/main/java/com/imaginea/structuralComaparator/repo/JavaParser.java");
+		List<Import> imports = result.getImports();
+		List<Import> imports = result.getImports();
+		for (Import imp : imports) {
+			System.out.println(imp);
+
+		}
+	}
+
+	public static void main(String[] args) {
+		// testImport();
+		testTypes();
+		String a = null;
+		String b = null;
+		if (a == b)
+			System.out.println("asdasdas");
+	}
+	
+	
+
+}
