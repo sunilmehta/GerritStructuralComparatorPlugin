@@ -84,8 +84,9 @@ section.main{
 
 .mainContianer{
 		position:relative;
-		height:50px;
+		height:900px;
 		margin-left:10px;
+		overflow-y:auto;
 }
 
 .hrSplitBar,

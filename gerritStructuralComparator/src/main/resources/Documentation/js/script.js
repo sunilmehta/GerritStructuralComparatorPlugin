@@ -72,7 +72,14 @@ var patch = function() {
 } ();
 
 // Loading Default Patch...
-window.load = comparePatchIds(patch.getPatchId());
+
+function init() {
+	getChangeIdDetails();
+	console.log(patch.getPatchId() + ' is fired from init dropdown');
+	comparePatchIds(patch.getPatchId());
+	}
+
+window.load = init();
 
 // This action selects a patch from the drop down and sends 'this' data-dd-id to patch Object by using setPatchId
 // Also send final data-dd-id to the comparePatchIds as param.
@@ -92,6 +99,7 @@ $('.subMenu a').click(function() {
 	1. removes the 'showThisTable' class if found then adds the 'hideThisTable' class to hide the tables */
 
 function comparePatchIds(getPatchInfo) {
+	alert('comparePatchIds '+getPatchInfo);
     var treeTables = $('.treeStructure table');
     for (var i = 0; i < treeTables.length; i++) {
         if (getPatchInfo.indexOf(treeTables[i].getAttribute('id')) !== -1) {

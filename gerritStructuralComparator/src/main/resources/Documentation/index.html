@@ -1,25 +1,41 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Gerrit</title>
 <link rel="stylesheet" href="css/screen.css" media="screen" />
 <link rel="stylesheet" href="css/jquery.treetable.css" />
 <link rel="stylesheet" href="css/jquery.treetable.theme.default.css" />
 <link href="css/styles.css" rel="stylesheet" type="text/css">
-<link href="css/dropdown.css" title="default" rel="stylesheet"
-	type="text/css" />
+<link href="css/dropdown.css" title="default" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="css/jquery.highlighttextarea.css" />
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/dojo/1.6.0/dojo/dojo.xd.js"></script>
+<script type="text/javascript" src="js/diffview.js"></script>
+<link rel="stylesheet" type="text/css" href="css/diffview.css"/>
+<script type="text/javascript" src="js/difflib.js"></script>
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/jquery.jkey.js"></script>
+<script type="text/javascript" src="js/softdivscroll.js"></script>
 <script type="text/javascript">
 		var multiArray = "";
 		
 		var lastClickedUrl = "";
 		
+		var changes = 0;
+		
+		var counter = 0;
+		
+		var wordHighLight = [];
+		
+		var modifiedMethod = [];
+		
+		 var baseVersion="", patchVersion="";
+		
 		function PatchComparison( patchSetUrl )
 		{
-			alert('patchSetUrl '+patchSetUrl+'\n'+'lastClickedUrl '+ lastClickedUrl);
 			if( patchSetUrl == lastClickedUrl ){
-			 	document.getElementById("baseVersion").innerHTML = "No Difference Found";
-			   	document.getElementById("patchVersion").innerHTML = "";
+				baseVersion = "No Difference Found";
+				patchVersion = "";
 			}else{
 				if (window.XMLHttpRequest){
 				  	xmlhttp=new XMLHttpRequest();
@@ -28,8 +44,18 @@
 				  }
 				xmlhttp.onreadystatechange=function(){
 				  if (xmlhttp.readyState==4 && xmlhttp.status==200){
-					  var comparatorResult = xmlhttp.responseText;
-					  parseJSONResponse( comparatorResult );
+					  var comparatorResult = null;
+					  var result = null;
+					  comparatorResult = xmlhttp.responseText;
+					  var javaCode =/JavaCode/g;
+					  result = javaCode.test( comparatorResult );
+					  if( result ==  true ){
+							baseVersion = "";
+							patchVersion = comparatorResult;
+							diffUsingJS(baseVersion, patchVersion);
+					  }else{
+					  		parseJSONResponse( comparatorResult );
+					  }
 				    }
 				  }
 				xmlhttp.open("GET","../gerritPlugin?patchSetURL1="+lastClickedUrl+"&patchSetURL2="+patchSetUrl,true);
@@ -42,6 +68,8 @@
 		
 		function fetchDatafromURL(url,patchNo)
 		{
+			var comparatorResult = "";
+			var result = "";
 			var xmlhttp;
 			
 			lastClickedUrl = url;
@@ -58,23 +86,25 @@
 			  {
 			  if (xmlhttp.readyState==4 && xmlhttp.status==200)
 			    {
-				  var comparatorResult = xmlhttp.responseText;
+				  comparatorResult = xmlhttp.responseText;
 				  var javaCode =/JavaCode/g;
-				  var result = javaCode.test( comparatorResult );
+				  result = null;
+				  result = javaCode.test( comparatorResult );
 				  
 				  var patchSetLabel = "";
+				  var baseSetLabel = "";
 				  for( var i = 0; i < multiArray.length ; i++ ){
 					  patchSetLabel += " ";
 					  patchSetLabel +=  multiArray[i][patchNo] ;
 				  }
-				  alert('patchSetLabel '+patchSetLabel);
 				  
 				  document.getElementById("patchSetLabel1").innerHTML = patchSetLabel;
 				  document.getElementById("patchSetLabel2").innerHTML = patchSetLabel;
 				  
 				  if( result ==  true ){
-						document.getElementById("baseVersion").innerHTML = "";
-						document.getElementById("patchVersion").innerHTML = comparatorResult;
+						baseVersion = "";
+						patchVersion = comparatorResult;
+						diffUsingJS(baseVersion, patchVersion);
 				  }else{
 					  parseJSONResponse( comparatorResult );
 				  }
@@ -87,9 +117,14 @@
 		
 		function parseJSONResponse( comparatorResult ){
 			 var parsedJSON = JSON.parse(comparatorResult);
-			  var baseVersion="", patchVersion="";
-			  
-			  // package name changes
+			 counter = 0;
+			 changes = 0;
+			 baseVersion = "";
+			 patchVersion = "";
+			 modifiedMethod = [];
+			 var changedFileTreeStructure = "<table id=\"ModificationDetails\" cellpadding=\"0\" cellspacing=\"0\"><tbody><tr data-tt-id='1'><td><span class='folder'>Compilation Unit </span></td></tr> <tr data-tt-id='1-1' data-tt-parent-id='1'><td><span class='folder'>";
+			
+			 // package name changes
 			  if( parsedJSON.pkg.diff == -1 || parsedJSON.pkg.diff == 10 || parsedJSON.pkg.diff == 1){
 				  baseVersion += parsedJSON.pkg.lines[0].value;
 				  patchVersion +=  parsedJSON.pkg.lines[1].value;
@@ -112,59 +147,117 @@
 					  patchVersion +=  parsedJSON.imports[i].lines[1].value;
 				  }
 			  }
-			  
+			  wordHighLight = [];
 			  // Changes in program body
 			   	for (var i = 0; i < parsedJSON.types.length ; i++){
 			   		 if ( parsedJSON.types[i].diff == 1 ) {
-			   			  baseVersion += '...\n';
+			   			  baseVersion += '\n';
 						  baseVersion += parsedJSON.types[i].declarations[0].completeNodeValue ;
 						  patchVersion += '\n';
+						  modifiedMethod.push( parsedJSON.types[i].declarations[0].name );
 			   		}else if ( parsedJSON.types[i].diff  == -1 ){
 						  baseVersion += '\n';
 						  patchVersion += '\n';
 						  patchVersion +=  parsedJSON.types[i].declarations[1].completeNodeValue;
+						  modifiedMethod.push( parsedJSON.types[i].declarations[1].name );
 					  }else if ( parsedJSON.types[i].diff  == 10 ){
-						  alert('parsedJSON.types[i].commonChilds.length '+parsedJSON.types[i].commonChilds.length);
-						  for ( var k=0; k < parsedJSON.types[i].commonChilds.length; k++){
-							 if( parsedJSON.types[i].commonChilds[k].diff == 10 ){
-								 var commonChilds = parsedJSON.types[i].commonChilds[k].commonChilds;
-								 alert('commonChilds '+commonChilds.length);
-								 alert('commonChilds diff '+commonChilds[0].diff);
-								 for( var x=0; x < commonChilds.length; x++ ){
-									 if ( commonChilds[x].diff == 1 ) {
-										  alert('commonChilds[x].declarations[0].completeNodeValue '+commonChilds[x].declarations[0].completeNodeValue);
-										 /*  baseVersion += '\n';
-										  baseVersion += commonChilds[x].declarations[0].completeNodeValue;
-										  patchVersion += '\n'; */
-									  }else if ( commonChilds[x].diff == -1 ){
-										  alert('commonChilds[x].declarations[0].completeNodeValue '+commonChilds[x].declarations[1].completeNodeValue);
-										 /*  baseVersion += '\n';
-										  patchVersion += '\n';
-										  patchVersion +=  commonChilds[x].declarations[1].completeNodeValue; */
-									  }
-								 }
-							 }
-						  }
-						  
-						  
 						  baseVersion += '\n';
 						  baseVersion +=  parsedJSON.types[i].declarations[0].completeNodeValue;
 						  patchVersion += '\n';
 						  patchVersion +=  parsedJSON.types[i].declarations[1].completeNodeValue; 
+						  changedFileTreeStructure += parsedJSON.types[i].declarations[0].name + "</span></td></tr>";
+						  
+						  for ( var k=0; k < parsedJSON.types[i].commonChilds.length; k++){
+							 if( parsedJSON.types[i].commonChilds[k].diff == 10 ){
+								 modifiedMethod.push( parsedJSON.types[i].commonChilds[k].declarations[0].name );
+								 var commonChilds = parsedJSON.types[i].commonChilds[k].commonChilds;
+								 for( var x=0; x < commonChilds.length; x++ ){
+									 if ( commonChilds[x].diff == 1 ) {
+										  wordHighLight.push( commonChilds[x].declarations[0].completeNodeValue );
+									  }else if ( commonChilds[x].diff == -1 ){
+										  wordHighLight.push( commonChilds[x].declarations[1].completeNodeValue );
+									  }
+								 }
+							 }else if( parsedJSON.types[i].commonChilds[k].diff == -1 ){
+								 modifiedMethod.push( parsedJSON.types[i].commonChilds[k].declarations[1].name );
+								 wordHighLight.push( parsedJSON.types[i].commonChilds[k].declarations[1].completeNodeValue );
+							 }else if( parsedJSON.types[i].commonChilds[k].diff == 1 ){
+								 modifiedMethod.push( parsedJSON.types[i].commonChilds[k].declarations[1].name );
+								 wordHighLight.push( parsedJSON.types[i].commonChilds[k].declarations[1].completeNodeValue );
+							 }
+						  }
 					  }
 			   	}
+			  
+			  for( var i=0; i< modifiedMethod.length; i++ ){
+				  changedFileTreeStructure += "<tr data-tt-id='1-1-"+(i+1)+"' data-tt-parent-id='1-1'><td>"+ modifiedMethod[i] + "</td></tr>"
+			  }
+			  
+			  changedFileTreeStructure += "</tbody></table>"
+			  document.getElementById("ModificationDetails").innerHTML = changedFileTreeStructure;
+			  //comparePatchIds('ModificationDetails');  
 			  	if( baseVersion == "" && patchVersion == ""){
 			  		baseVersion = "No changes Found";
 			  		patchVersion = "No changes Found";
 			  	}
+			  	diffUsingJS(baseVersion, patchVersion);
 			  	
-			   	document.getElementById("baseVersion").innerHTML = baseVersion;
-			   	document.getElementById("patchVersion").innerHTML = patchVersion;
+		}
+		
+		function diffUsingJS(baseVersion, patchVersion){
+			var $ = dojo.byId;
+		  	var url = window.location.toString().split("#")[0];
+		  	var base = difflib.stringAsLines(baseVersion);
+			var newtxt = difflib.stringAsLines(patchVersion);
+			var sm = new difflib.SequenceMatcher(base, newtxt);
+			var opcodes = sm.get_opcodes();
+			var diffoutputdiv = $("diffoutput");
+			while (diffoutputdiv.firstChild) diffoutputdiv.removeChild(diffoutputdiv.firstChild);
+			contextSize = null;
+			diffoutputdiv.appendChild(diffview.buildView({ baseTextLines:base,
+														   newTextLines:newtxt,
+														   opcodes:opcodes,
+														   baseTextName:"Base Set",
+														   newTextName:"Patch Set",
+														   contextSize:contextSize,
+														   viewType:0 }));
+			for( var i=0; i < opcodes.length;i++){
+				code = opcodes[i];
+				if( code[0] != "equal"){
+					changes++;
+				}
+			}
 		}
 		
 		
-		
-		
+		$(document).jkey('f6',function(){
+			gotoNext();
+			location.href = document.getElementById("markerNext").href;
+		  });
+		  
+		$(document).jkey('f7',function(){
+			gotoPrevious();
+			location.href = document.getElementById("markerPrev").href;
+		  });
+		  
+		  
+		function gotoNext(){
+			if( counter <= changes ){
+				if( counter == changes )
+					counter = 0;
+				document.getElementById("markerNext").href = "#Marker"+(counter);
+				counter++;
+			}
+		}
+
+		function gotoPrevious(){
+				--counter;
+			if( counter < changes ){
+				if( counter < 0 )
+					counter = changes-1;
+				document.getElementById("markerPrev").href = "#Marker"+( counter );
+			}
+		}
 		
 		
 		function getChangeIdDetails()
@@ -187,6 +280,7 @@
 			    	if(document.getElementById("changeId").value == ""){
 				    	var parsedJSON = JSON.parse(xmlhttp.responseText).changeIDs;
 				    	var parsedChangeJSON = JSON.parse(xmlhttp.responseText).change;
+				    	parsedJSON.reverse();
 				    	for (var i = 0; i < parsedJSON.length ; i++){
 				    	      listItems+= "<option value='" + parsedJSON[i].change_id + "'>" + parsedJSON[i].change_id + "</option>";
 				    	    }
@@ -199,44 +293,41 @@
 			    		document.getElementById("branch").innerHTML= parsedChangeJSON.branch;
 			    		document.getElementById("project").innerHTML= parsedChangeJSON.projectName;
 			    		document.getElementById("commitmsg").innerHTML= parsedChangeJSON.subject;
-			    		/* var filename = parsedChangeJSON.patchSets[0];
-			    		alert('Patch File Name '+filename.patchFileName ); */
 			    		var totalPatchSet = parsedChangeJSON.patchSets.length;
 			    		multiArray =  new Array(totalPatchSet);
 			    		for (var i = 0; i < parsedChangeJSON.patchSets.length ; i++){
 			    			var patch= parsedChangeJSON.patchSets[i];
-			    			var tbody = "<tbody id=\"patchset"+ (i+1) +"\"><tr data-tt-id='1'><td><span class='folder'>Patch"+ (i+1) +"</span></td></tr>";
+			    			var tbody = "<tbody><tr data-tt-id='1'><td><span class='folder'>Patch "+ (i+1) +"</span></td></tr>";
 			    			var totalPatches = patch.patchList.length;
 			    			multiArray[i] =  new Array( totalPatches );
 			    			for (var j = 0; j < patch.patchList.length ; j++){
-			    				tbody += "<tr><td><a onclick=\"fetchDatafromURL('"+ patch.patchList[j].fileURL +"','" + j + "')\"> " +patch.patchList[j].patchFileName + "</a></td></tr>"
+			    				tbody += "<tr data-tt-id='1-"+(j+1) + "' data-tt-parent-id='1'><td><span class=\"file\"><a onclick=\"fetchDatafromURL('"+ patch.patchList[j].fileURL +"','" + j + "')\" style=\"padding-left: 19px;\"> " +patch.patchList[j].patchFileName + "</a></span></td></tr>"
 			    				multiArray[i][j] = "<a onclick=\"PatchComparison('"+ patch.patchList[j].fileURL + "')\"> " + (i+1) + "</a>"
 			    			}
-			    			var id = "patchset"+(i+1);
+			    			var id = "patch"+(i+1);
 			    			tbody+= "</tbody>";
-			    		//	alert('tbody '+tbody);
-			    			document.getElementById(id).innerHTML= tbody;
+			    			var table = "<table id=\"patch"+(i+1)+"\" cellpadding=\"0\" cellspacing=\"0\">" + tbody + " </table>"
+			    			document.getElementById(id).innerHTML= table;
+			    			//comparePatchIds('#'+id);
 			    		}
-			    		
-			    		/*  for(var i = 0; i < parsedChangeJSON.patchSets.length ; i++){
-			    			var patch= parsedChangeJSON.patchSets[i];
-			    			for (var j = 0; j < patch.patchList.length ; j++){
-			    				alert('MultiArray'+j+' '+i+' ::'+multiArray[j][i]);
-			    			}
-			    		} 
-			    		 */
+			    		if( parsedChangeJSON.patchSets.length == 1 ){
+		    				document.getElementById("patch2").innerHTML= '';
+		    				document.getElementById("patch3").innerHTML= '';
+		    			}else if( parsedChangeJSON.patchSets.length == 2 ){
+		    				document.getElementById("patch3").innerHTML= '';
+		    			}
 			    }
 			}
 			if(document.getElementById("changeId").value == ""){
-				xmlhttp.open("GET","../gerritPlugin",true);
+				xmlhttp.open("GET","../gerritPlugin",false);
 			}else{
-				xmlhttp.open("GET","../gerritPlugin?id="+document.getElementById("changeId").value,true);
+				xmlhttp.open("GET","../gerritPlugin?id="+document.getElementById("changeId").value,false);
 			}
 			xmlhttp.send();	
 		}
 </script>
 </head>
-<body onload="getChangeIdDetails()">
+<body>
 	<div class="container">
 		<!-- *************************************** HEADER  -->
 		<header class="header">
@@ -328,7 +419,7 @@
 								<div class="lFloat col col1">
 									<div class="ownerInfoRow">
 										<label>Change-Id</label>
-										<p><select id="changeId" onchange="getChangeIdDetails()"><option value="">No ChangeId Found</option></select></p>
+										<p><select id="changeId" onchange="init()"><option value="">No ChangeId Found</option></select></p>
 									</div>
 
 									<div class="ownerInfoRow">
@@ -437,7 +528,7 @@
 									</div>
 									<div class="search-container">
 										<input type="text" value="" class="inputText" id="search"
-											placeholder="Start Searching â¦" name="term" id="term"
+											placeholder="Start Searching" name="term" id="term"
 											autocomplete="off">
 										<button class="image-button search no-margin"
 											id="searchAction" type="submit">Search</button>
@@ -618,7 +709,7 @@
 		</section>
 
 		<section class="main">
-			<div class="mainContianer">
+			<div class="mainContianer" id="scrollDiv">
 				<div class="zoomAction">
 					<ul class="showFullScreen">
 						<li class="controlScreen fullScreen"><i
@@ -626,52 +717,32 @@
 						<li class="controlScreen resizeScreen"><i
 							class="icon-resize-small"></i></li>
 					</ul>
-
 				</div>
-				<!-- <div class="playGround">
-
-					Gold futures in India, the world's biggest buyer of the metal,
-					dropped nearly 3 percent to hit their lowest level in 15-1/2
-					months, mirroring losses in the world market. (Photo: Reuters
-					Pictures) Gold futures in India, the world's biggest buyer of the
-					metal, dropped nearly 3 percent to hit their lowest level in 15-1/2
-					months, mirroring losses in the world market. (Photo: Reuters
-					Pictures) Gold futures in India, the world's biggest buyer of the
-					metal, dropped nearly 3 percent to hit their lowest level in 15-1/2
-					months, mirroring losses in the world market. (Photo: Reuters
-					Pictures) Gold futures in India, the world's biggest buyer of the
-					metal, dropped nearly 3 percent to hit their lowest level in 15-1/2
-					months, mirroring losses in the world market. (Photo: Reuters
-					Pictures)
-				</div> -->
+				<div id="changeTree"><table id="ModificationDetails"></table> </div>
+				<a id="markerNext" href="#Marker0" onclick="gotoNext()">Next</a>&nbsp;&nbsp;
+				<a id="markerPrev" href="#Marker0" onclick="gotoPrevious()">Previous</a>
+				<div id="diffoutput" class="vScroll"> </div>
 				
-				<table border="1">
-				<tr>
-					<td> PatchSet <span id="patchSetLabel1"></span>
-					</td>
-					<td> PatchSet  <span id="patchSetLabel2"></span>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<textarea  readonly="readonly" id="baseVersion" rows="25" cols="60"></textarea>
-					</td>
-					<td>
-						<textarea  readonly="readonly" id="patchVersion" rows="25" cols="60"></textarea>
-					</td>
-				</tr>
+				<table border="1" width="100%">
+					<tr>
+						<td> PatchSet <span id="patchSetLabel1"></span>
+						</td>
+						<td> PatchSet  <span id="patchSetLabel2"></span>
+						</td>
+					</tr>
 				</table>
 			</div>
-
 		</section>
-
 	</div>
-
-
-	<script src="js/jquery.js"></script>
-	<script src="js/jquery-ui.js"></script>
-	<script src="js/jquery.treetable.js"></script>
-	<script type="text/javascript" src="js/dropdown.js"></script>
+	
+	<script type="text/javascript">
+		sdsObj = new SoftDivScroll( 'scrollDiv' );
+	</script>
+	
+	<script type="text/javascript" src="js/jquery.highlighttextarea.js"></script>	
+	<script type="text/javascript" src="js/jquery-ui.js"></script>
+	<script type="text/javascript" src="js/jquery.treetable.js"></script>
+	<script  type="text/javascript" src="js/dropdown.js"></script>
 	<script src="js/script.js"></script>
 </body>
 </html>
