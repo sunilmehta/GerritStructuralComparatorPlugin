@@ -28,7 +28,6 @@ public class GerritPlugin extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private final PatchListCache patchListCache;
 	private final SchemaFactory<ReviewDb> dbFactory;
-
 	@Inject
 	public GerritPlugin(SchemaFactory<ReviewDb> dbFactory,
 			final PatchListCache patchListCache) {
@@ -72,6 +71,7 @@ public class GerritPlugin extends HttpServlet {
 				ComparisonResult result = comparatorImpl.compare(fileData1 ,fileData2);
 			 	Gson gson = new Gson();
 			    out.write(gson.toJson( result ));
+			    System.out.println( "Structural Comparator Result \n:: "+gson.toJson( result ) );
 			}else{
 				String reqHostName = req.getServerName() + ":" + req.getServerPort();
 				ChangeDetails changeDetail = new ChangeDetails();
@@ -86,7 +86,9 @@ public class GerritPlugin extends HttpServlet {
 					changeDetail.setChange( serviceObj.fetchChangesbyChangeId(dbFactory, patchListCache, reqHostName, reqChangeId) );
 				}else if( changeIdList.size() > 0){
 					changeDetail.setChangeIDs(changeIdList);
-					changeDetail.setChange( serviceObj.fetchChangesbyChangeId(dbFactory, patchListCache, reqHostName, changeIdList.get(0).getChange_id()) );
+					int index = changeIdList.size() - 1 ; 
+					System.out.println("index:: "+index);
+					changeDetail.setChange( serviceObj.fetchChangesbyChangeId(dbFactory, patchListCache, reqHostName, changeIdList.get( index ).getChange_id()) );
 				}
 				
 				Gson gson = new Gson();
@@ -106,8 +108,8 @@ public class GerritPlugin extends HttpServlet {
 	}
 	
 	public static void main(String[] args) throws MalformedURLException {
-		String PatchSetUrl = "http://localhost:8080/cat/18,2,com/imaginea/HttpModule.java^0";
-		String BaseUrl = PatchSetUrl.substring(0, PatchSetUrl.length()-1).concat("1");
+		String PatchSetUrl = "http://localhost:8080/cat/30,1,com/imaginea/TestJava.java^0";
+		String BaseUrl = "http://localhost:8080/cat/30,1,com/imaginea/TestJava.java^0";
 		String fileData1 = FileDataRetrivalService.getFileDataStream(BaseUrl);
 		String fileData2 = FileDataRetrivalService.getFileDataStream(PatchSetUrl);
 		System.out.println("fileData1::"+fileData1);
