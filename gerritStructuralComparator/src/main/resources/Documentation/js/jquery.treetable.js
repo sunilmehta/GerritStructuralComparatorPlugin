@@ -427,7 +427,8 @@
       if (node) {
         node.expand();
       } else {
-        throw new Error("Unknown node '" + id + "'");
+    	  console.log("Unknown node '" + id + "'");
+      //  throw new Error("Unknown node '" + id + "'");
       }
 
       return this;

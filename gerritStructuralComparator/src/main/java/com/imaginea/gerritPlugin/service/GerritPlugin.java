@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
 import com.google.gerrit.extensions.annotations.Export;
 import com.google.gerrit.reviewdb.server.ReviewDb;
 import com.google.gerrit.server.patch.PatchListCache;
@@ -24,7 +27,9 @@ import com.imaginea.javaStructuralComparator.repo.ComparatorImpl;
 
 @Export("/gerritPlugin")
 public class GerritPlugin extends HttpServlet {
-
+	
+	private static org.apache.log4j.Logger log = Logger.getLogger(GerritPlugin.class);
+	
 	private static final long serialVersionUID = 1L;
 	private final PatchListCache patchListCache;
 	private final SchemaFactory<ReviewDb> dbFactory;
@@ -38,12 +43,13 @@ public class GerritPlugin extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+		PropertyConfigurator.configure("E:/GerritProject/VinodWorkspace/gerritStructuralComparatorPlugin/gerritStructuralComparator/src/main/resources/log4j.properties");
 		PrintWriter out = resp.getWriter();
 		try {
 			String PatchSetUrl = req.getParameter("url");
 			String PatchSetUrl1 = req.getParameter("patchSetURL1");
 			String PatchSetUrl2 = req.getParameter("patchSetURL2");
-			System.out.println("fileURL1 "+PatchSetUrl);
+			log.debug("fileURL1 "+PatchSetUrl);
 			String BaseUrl = "";
 			String fileData1 ="";
 			String fileData2 ="";
@@ -58,9 +64,10 @@ public class GerritPlugin extends HttpServlet {
 					 ComparisonResult result = comparatorImpl.compare(fileData1 ,fileData2);
 					 Gson gson = new Gson();
 					 out.write(gson.toJson( result ));
-					 System.out.println( "Structural Comparator Result \n:: "+gson.toJson( result ) );
+					 log.debug( "Structural Comparator Result \n:: "+gson.toJson( result ) );
 				}catch (Exception e) {
-					System.out.println("Exception caught");
+					log.error("Exception from (null != PatchSetUrl && null != BaseUrl ) "+e);
+					log.debug("Exception caught");
 					fileData1 = "";
 					out.write("JavaCode \n"+fileData2);
 				}
@@ -71,7 +78,7 @@ public class GerritPlugin extends HttpServlet {
 				ComparisonResult result = comparatorImpl.compare(fileData1 ,fileData2);
 			 	Gson gson = new Gson();
 			    out.write(gson.toJson( result ));
-			    System.out.println( "Structural Comparator Result \n:: "+gson.toJson( result ) );
+			    log.debug( "Structural Comparator Result \n:: "+gson.toJson( result ) );
 			}else{
 				String reqHostName = req.getServerName() + ":" + req.getServerPort();
 				ChangeDetails changeDetail = new ChangeDetails();
@@ -80,14 +87,14 @@ public class GerritPlugin extends HttpServlet {
 				List<ChangeID> changeIdList = serviceObj.prepareChangeIdList(dbFactory, patchListCache, reqHostName);
 				changeDetail.setChangeIDs(changeIdList);
 				String reqChangeId = req.getParameter("id");
-				System.out.println("Request Parameter "+reqChangeId);
+				log.debug("Request Parameter "+reqChangeId);
 				if( null != reqChangeId ){
 					changeDetail.setChangeIDs(null);
 					changeDetail.setChange( serviceObj.fetchChangesbyChangeId(dbFactory, patchListCache, reqHostName, reqChangeId) );
 				}else if( changeIdList.size() > 0){
 					changeDetail.setChangeIDs(changeIdList);
 					int index = changeIdList.size() - 1 ; 
-					System.out.println("index:: "+index);
+					log.debug("index:: "+index);
 					changeDetail.setChange( serviceObj.fetchChangesbyChangeId(dbFactory, patchListCache, reqHostName, changeIdList.get( index ).getChange_id()) );
 				}
 				
@@ -95,28 +102,16 @@ public class GerritPlugin extends HttpServlet {
 				// String json = gson.toJson(changeList);
 				String changeDetailJSON = gson.toJson(changeDetail);
 				//out.write(json);
-				System.out.println("changeDetailJSON "+changeDetailJSON);
+				log.debug("changeDetailJSON "+changeDetailJSON);
 				out.write(changeDetailJSON);
 			}
 			
 		} catch (Exception e) {
+			log.error(e);
 			e.printStackTrace();
 			out.write("<html><body>Exceptions being thrown</body></html>");
 		} finally {
 			out.close();
 		}
-	}
-	
-	public static void main(String[] args) throws MalformedURLException {
-		String PatchSetUrl = "http://localhost:8080/cat/30,1,com/imaginea/TestJava.java^0";
-		String BaseUrl = "http://localhost:8080/cat/30,1,com/imaginea/TestJava.java^0";
-		String fileData1 = FileDataRetrivalService.getFileDataStream(BaseUrl);
-		String fileData2 = FileDataRetrivalService.getFileDataStream(PatchSetUrl);
-		System.out.println("fileData1::"+fileData1);
-		System.out.println("fileData2::"+fileData2);
-		ComparatorImpl comparatorImpl = new ComparatorImpl();
-		ComparisonResult result = comparatorImpl.compare(fileData1 ,fileData2);
-		Gson gson = new Gson();
-		System.out.println( "Structural Comparator Result:: "+gson.toJson( result ) );
 	}
 }

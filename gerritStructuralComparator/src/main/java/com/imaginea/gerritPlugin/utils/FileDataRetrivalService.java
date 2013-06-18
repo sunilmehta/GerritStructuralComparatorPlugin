@@ -12,13 +12,17 @@ import java.rmi.UnexpectedException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.log4j.Logger;
+
 public class FileDataRetrivalService {
 
+	private static org.apache.log4j.Logger log = Logger.getLogger(FileDataRetrivalService.class);
+	
 	final private static int BUFFER_SIZE = 1024;
 
 	public static String getFileDataStream(String url)
 			throws MalformedURLException {
-		System.out.println("******************************" + url);
+		log.debug("******************************" + url);
 		URL urlObject = new URL(url);
 		return getFileDataStream(urlObject);
 	}
@@ -26,6 +30,7 @@ public class FileDataRetrivalService {
 	public static String getFileDataStream(URL url) {
 
 		if (url == null) {
+			log.warn("arrgument:'url' cannot be null.");
 			throw new IllegalArgumentException(
 					"arrgument:'url' cannot be null.");
 		}
@@ -44,7 +49,7 @@ public class FileDataRetrivalService {
 
 			inputStream = urlConnection.getInputStream();
 			dis = new DataInputStream(new BufferedInputStream(inputStream));
-			System.out.println("Input connection established.");
+			log.debug("Input connection established.");
 
 			zis = new ZipInputStream(new BufferedInputStream(dis));
 
@@ -69,12 +74,13 @@ public class FileDataRetrivalService {
 					extracted++;
 				} else {
 					String detail = "Unexpected number of entries present in the ZIP file retrieved from the provided Url.";
+					log.error("Unexpected number of entries present in the ZIP file retrieved from the provided Url.");
 					throw new UnexpectedException(detail);
 				}
 			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		} finally {
 			try {
 				zis.close();
@@ -83,21 +89,10 @@ public class FileDataRetrivalService {
 				byteArrayOutputStream.close();
 				urlConnection.disconnect();
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error(e);
 			}
 		}
 
 		return byteArrayOutputStream.toString();
-	}
-
-	public static void main(String[] args) {
-		try {
-			String res= getFileDataStream("http://localhost:8080/cat/17,2,TestCase2.txt^0");
-			System.out.println("res "+res);
-		//	System.out.println(getFileDataStream("http://172.16.12.157:8080/cat/10,1,testfile8.txt^0"));
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 }

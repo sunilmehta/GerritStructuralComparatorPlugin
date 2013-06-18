@@ -61,6 +61,7 @@ table.diff tbody td {
 	padding:0px .4em;
 	padding-top:.4em;
 	vertical-align:top;
+	width: 47%;
 }
 table.diff .empty {
 	background-color:#DDD;
@@ -85,5 +86,5 @@ table.diff th.author {
 	background:#EFEFEF
 }
 
-.vScroll {height:350px;overflow-y:auto;margin-top:22px;}
+.vScroll {height:380px;overflow-y:auto;margin-top:22px;}
 .vScroll thead {position:absolute ;margin-top:-20px; width:50%}

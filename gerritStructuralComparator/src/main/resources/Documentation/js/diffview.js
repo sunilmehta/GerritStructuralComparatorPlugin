@@ -137,13 +137,7 @@ diffview = {
 			var rowcnt = Math.max(be - b, ne - n);
 			var toprows = [];
 			var botrows = [];
-			if( change !="equal" ){
-				node = document.createElement("a");
-				node.name = "Marker"+ counter;
-				toprows.push( node );
-				counter++;
-				
-			}
+			
 			for (var i = 0; i < rowcnt; i++) {
 				// jump ahead if we've alredy provided leading context or if this is the first range
 				if (contextSize && opcodes.length > 1 && ((idx > 0 && i == contextSize) || (idx == 0 && i == 0)) && change=="equal") {
@@ -170,6 +164,16 @@ diffview = {
 				
 				
 				toprows.push(node = document.createElement("tr"));
+				if( change !="equal" ){
+					node.id = "Marker"+ counter;
+					counter++;
+				}
+				
+				if( change =="equal" ){
+					node.className = "hide_Rows";
+				}
+				
+				
 				if (inline) {
 					if (change == "insert") {
 						addCellsInline(node, null, n++, newTextLines, change);

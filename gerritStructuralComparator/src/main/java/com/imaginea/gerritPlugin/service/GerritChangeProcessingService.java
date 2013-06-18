@@ -4,6 +4,8 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.google.gerrit.reviewdb.client.Patch;
 import com.google.gerrit.reviewdb.server.ReviewDb;
 import com.google.gerrit.server.patch.PatchList;
@@ -19,6 +21,8 @@ import com.imaginea.gerritPlugin.utils.FileDataRetrivalService;
 
 public class GerritChangeProcessingService {
 
+	private static org.apache.log4j.Logger log = Logger.getLogger(GerritChangeProcessingService.class);
+	
 	private String requestHostName = null;
 	
 	// Method Added by: Amit Kumar
@@ -194,8 +198,8 @@ public class GerritChangeProcessingService {
 	}
 	
 	public static void main(String[] args) throws MalformedURLException {
-		String response = FileDataRetrivalService.getFileDataStream("http://localhost:8080/cat/18,3,com/imaginea/HttpModule.java^1");
-		System.out.println("Response "+ response);
+		String response = FileDataRetrivalService.getFileDataStream("http://localhost:8080/cat/32,1,com/imaginea/ChangeDetails.java^0");
+		log.debug("Response "+ response);
 	}
 
 }

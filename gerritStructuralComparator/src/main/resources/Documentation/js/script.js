@@ -75,7 +75,12 @@ var patch = function() {
 
 function init() {
 	getChangeIdDetails();
+	patch.setPatchId('patch1');
+	document.getElementById("checkCurrentPatch").innerHTML = 'Patch 1';
 	console.log(patch.getPatchId() + ' is fired from init dropdown');
+	// Added by: Amit.Anjani
+    $(patch.getPatchId()).treetable('destroy');
+    // End
 	comparePatchIds(patch.getPatchId());
 	}
 
@@ -113,6 +118,25 @@ function comparePatchIds(getPatchInfo) {
         }
     }
 }
+
+
+// Added By: Amit.Anjani
+function createClassStructure(getPatchInfo) {
+    var treeTables = $('.treeClassStructure table');
+    for (var i = 0; i < treeTables.length; i++) {
+        if (getPatchInfo.indexOf(treeTables[i].getAttribute('id')) !== -1) {
+            treeTables[i].className = 'showThisTable treetable';
+            renderPatchTree(getPatchInfo);
+        } else {
+            if (treeTables[i].className === 'showThisTable') {
+                treeTables[i].className = '';
+            }
+            treeTables[i].className = 'hideThisTable';
+        }
+    }
+}
+
+
 
 // 	Rendering Selected Patch Tree using the final getPatchId from the Patch Object as a param called 'getFinalPatchId'
 function renderPatchTree(getFinalPatchId) {

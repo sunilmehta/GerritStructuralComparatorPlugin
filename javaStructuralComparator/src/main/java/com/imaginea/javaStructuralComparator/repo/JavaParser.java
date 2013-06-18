@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.util.Map;
 import java.util.Scanner;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -12,8 +13,10 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 public class JavaParser {
 
+	private static org.apache.log4j.Logger log = Logger.getLogger(JavaParser.class);
+	
 	static CompilationUnit parse(char[] charArray) {
-		System.out.println("Executing CompilationUnit parse(char[] charArray)");
+		log.debug("Executing CompilationUnit parse(char[] charArray)");
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 		parser.setSource(charArray);
 		@SuppressWarnings("rawtypes")
@@ -25,7 +28,7 @@ public class JavaParser {
 	}
 
 	static CompilationUnit parse(File file) throws FileNotFoundException {
-		System.out.println("Executing CompilationUnit parse(File file)");
+		log.debug("Executing CompilationUnit parse(File file)");
 		String theString = "";
 		Scanner scanner = new Scanner(file);
 		theString = scanner.nextLine();
@@ -37,7 +40,7 @@ public class JavaParser {
 	}
 
 	static CompilationUnit parse(String fileName) throws FileNotFoundException {
-		System.out.println("Executing CompilationUnit parse(String fileName)");
+		log.debug("Executing CompilationUnit parse(String fileName)");
 		File file = new File(fileName);
 		return parse(file);
 	}

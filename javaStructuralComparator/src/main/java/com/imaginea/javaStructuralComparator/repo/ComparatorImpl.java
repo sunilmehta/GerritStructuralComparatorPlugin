@@ -3,9 +3,9 @@ package com.imaginea.javaStructuralComparator.repo;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
-import com.google.gson.Gson;
 import com.imaginea.javaStructuralComparator.domain.ComparisonResult;
 import com.imaginea.javaStructuralComparator.domain.Import;
 import com.imaginea.javaStructuralComparator.domain.Package;
@@ -14,6 +14,8 @@ import com.imaginea.javaStructuralComparator.domain.node.Line;
 
 
 public class ComparatorImpl implements Comparator {
+	
+	private static org.apache.log4j.Logger log = Logger.getLogger(ComparatorImpl.class);
 
 	ComparisonResult result = new ComparisonResult();
 	
@@ -21,7 +23,7 @@ public class ComparatorImpl implements Comparator {
 	}
 
 	public ComparisonResult compare(String actualFile, String expectedFile) {
-		System.out.println("File comparison is going on...");
+		log.debug("File comparison is going on...");
 		CompilationUnit actualCompilationUnit = null, expectedCompilationUnit = null;
 		actualCompilationUnit = JavaParser.parse(actualFile.toCharArray());
 		expectedCompilationUnit = JavaParser.parse(expectedFile.toCharArray());
@@ -72,16 +74,4 @@ public class ComparatorImpl implements Comparator {
 		result.setTypes(types);
 		
 	}
-	
-/*	public static void main(String[] args) {
-		String file1 = "http://localhost:8080/cat/18,2,com/imaginea/HttpModule.java^0";
-		String file2 = "http://localhost:8080/cat/18,1,com/imaginea/HttpModule.java^0";
-		System.out.println("file1::"+file1+"\nfile2::"+file2);
-		ComparatorImpl comparatorImpl = new ComparatorImpl();
-		ComparisonResult result = comparatorImpl.compare(file1 ,file2);
-		Gson gson = new Gson();
-		//gson.toJson( result );
-		
-		System.out.println( gson.toJson( result ) );
-	}*/
 }
