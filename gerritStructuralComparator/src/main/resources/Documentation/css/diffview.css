@@ -86,5 +86,6 @@ table.diff th.author {
 	background:#EFEFEF
 }
 
-.vScroll {height:380px;overflow-y:auto;margin-top:22px;}
+.vScroll {height:360px;overflow-y:auto;margin-top:22px;}
+.vScrollFullScreen {height:480px;overflow-y:auto;margin-top:22px;}
 .vScroll thead {position:absolute ;margin-top:-20px; width:50%}

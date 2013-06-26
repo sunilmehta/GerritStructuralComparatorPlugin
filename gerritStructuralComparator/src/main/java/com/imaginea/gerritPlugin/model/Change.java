@@ -5,15 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Change {
-//	Added folder with few files in it ** null ** Vinod Kakarla ** MyFirst ** NEW ** refs/heads/master ** master ** MyFirst
-//	 c.getSubject() + "  **  " + c.getTopic() + "  **  " + reviewDb.accounts().get(c.getOwner()).getFullName() + "  **  " + c.getProject().get() + "  **  " + c.getStatus() + " ** " + c.getDest().get() + " ** " + c.getDest().getShortName() + " ** " + c.getDest().getParentKey().get();
-	
-//	change.currentPatchSetId().get() + " ** "
-//	+ change.getSubject() + " ** "
-//	+ change.getProject().get() + change.getCreatedOn()
-//	+ " ** " + change.getLastUpdatedOn() + " ** "
-//	+ change.getChangeId() + " ** " 
-//	+ change.getDest() + "<br>";
 	
 	private int changeID;
 	private String changeKey;
@@ -26,6 +17,19 @@ public class Change {
 	private String changeStatus;
 	
 	private List<PatchSet> patchSets = new ArrayList<PatchSet>();
+	
+	public Change(){}
+	
+	public Change(com.google.gerrit.reviewdb.client.Change change){
+		this.branch = change.getDest().getShortName();
+		this.changeID = change.getChangeId();
+		this.changeKey = change.getKey().get();
+		this.creationDate = change.getCreatedOn();
+		this.lastUpdationDate = change.getLastUpdatedOn();
+		this.projectName = change.getProject().get();
+		this.subject = change.getSubject();
+		this.changeStatus = change.getStatus().name();
+	}
 
 	public int getChangeID() {
 		return changeID;

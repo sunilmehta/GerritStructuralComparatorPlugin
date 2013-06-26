@@ -10,6 +10,35 @@ var modifiedMethod = [];
 
 var baseVersion = "", patchVersion = "";
 
+function getGerritCommitDetails(){
+	var xmlhttp;
+	
+	if (window.XMLHttpRequest) {
+		xmlhttp = new XMLHttpRequest();
+	} else { 
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xmlhttp.onreadystatechange = function() {
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+			var jsonData = xmlhttp.responseText;
+			var parsedJSON = JSON.parse(xmlhttp.responseText).changeIDs;
+			createStatusTable( parsedJSON.reverse() );
+		}
+	}
+	xmlhttp.open("GET", "../gerritPlugin", false);
+	xmlhttp.send();
+}
+
+
+function createStatusTable(commitList){
+	var tbody = "<tbody>";
+	for ( var i = 0; i < commitList.length; i++) {
+		tbody +="\n<tr><td><a onclick=\"init(this)\">" + commitList[i].change_id + " </td><td> " + commitList[i].commitMsg + "</td></tr>";
+	}
+	tbody += "</tbody>";
+	document.getElementById("openStatus").innerHTML = tbody;
+}
+
 // This Method compares selected Patches with BaseVersion
 function PatchComparison(patchSetUrl) {
 	document.getElementById("containerId").style.display = "none";
@@ -52,13 +81,13 @@ function PatchComparison(patchSetUrl) {
 
 // This Method fetches the data from the provided URL
 function fetchDatafromURL(url, patchNo) {
-	//document.getElementById("containerId").style.display = "none";
-	document.getElementById("wait").style.display = "block";
-	
 	var comparatorResult = "";
 	var result = "";
 	var xmlhttp;
 
+	document.getElementById("containerId").style.display = "none";
+	document.getElementById("wait").style.display = "block";
+	
 	lastClickedUrl = url;
 
 	if (window.XMLHttpRequest) {
@@ -102,7 +131,7 @@ function fetchDatafromURL(url, patchNo) {
 }
 
 
-// This Method parses the JSONResponse received from the provided URL
+// This Method parses the JSONResponse
 function parseJSONResponse(comparatorResult) {
 	var parsedJSON = JSON.parse(comparatorResult);
 	counter = -1;
@@ -309,7 +338,7 @@ $(document).ready(function() {
 
 
 // This Method retrieves all changeIds list, project details and all Patches of most updated changes
-function getChangeIdDetails() {
+function getChangeIdDetails( key ) {
 	var listItems = "";
 	var xmlhttp;
 	
@@ -324,16 +353,7 @@ function getChangeIdDetails() {
 	xmlhttp.onreadystatechange = function() {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 			var jsonData = xmlhttp.responseText;
-			if (document.getElementById("changeId").value == "") {
-				var parsedJSON = JSON.parse(xmlhttp.responseText).changeIDs;
-				var parsedChangeJSON = JSON.parse(xmlhttp.responseText).change;
-				parsedJSON.reverse();
-				for ( var i = 0; i < parsedJSON.length; i++) {
-					listItems += "<option value='" + parsedJSON[i].change_id
-							+ "'>" + parsedJSON[i].change_id + "</option>";
-				}
-				document.getElementById("changeId").innerHTML = listItems;
-			}
+			
 			var parsedChangeJSON = JSON.parse(xmlhttp.responseText).change;
 			document.getElementById("owner").innerHTML = parsedChangeJSON.owner;
 			document.getElementById("uploadedon").innerHTML = parsedChangeJSON.creationDate;
@@ -380,11 +400,7 @@ function getChangeIdDetails() {
 			document.getElementById("wait").style.display = "none";
 		}
 	}
-	if (document.getElementById("changeId").value == "") {
-		xmlhttp.open("GET", "../gerritPlugin", false);
-	} else {
-		xmlhttp.open("GET", "../gerritPlugin?id="
-				+ document.getElementById("changeId").value, false);
-	}
+	
+	xmlhttp.open("GET", "../gerritPlugin?id="+ key, false);
 	xmlhttp.send();
 }

@@ -40,9 +40,11 @@
         if (codeReviewViewState == '') {
             splitTarget('show', 'hideContent');
             codeReviewState.parentNode.className = 'showResizedScreen';
+            document.getElementById('diffoutput').className = 'vScrollFullScreen';
         } else {
             splitTarget('', 'showContent');
             codeReviewState.parentNode.className = 'showFullScreen';
+            document.getElementById('diffoutput').className = 'vScroll';
         }
     }
 
@@ -73,18 +75,31 @@ var patch = function() {
 
 // Loading Default Patch...
 
-function init() {
-	getChangeIdDetails();
+function init( anchor ) {
+	var changeID = anchor.innerHTML;
+	getChangeIdDetails( changeID );
 	patch.setPatchId('patch1');
-	document.getElementById("checkCurrentPatch").innerHTML = 'Patch 1';
 	console.log(patch.getPatchId() + ' is fired from init dropdown');
 	// Added by: Amit.Anjani
     $(patch.getPatchId()).treetable('destroy');
     // End
 	comparePatchIds(patch.getPatchId());
+	document.getElementById("changeID").innerHTML = changeID; 
+	document.getElementById("checkCurrentPatch").innerHTML = 'Patch 1';
+	document.getElementById("ShowDetail").style.display="block";
+	document.getElementById("HideDetail").style.display="none";
+	document.getElementById("dialogBox").style.display= "none";
+	$('#dialog_StatusOpen_window_minimized').show();
+	$('#dialog_StatusOpen_window').hide();
+	$('#headerSection').hide();
+    $('#dataContainer').show();
 	}
 
-window.load = init();
+function loadGerritCommit() {
+	getGerritCommitDetails();
+}
+
+window.load = loadGerritCommit();
 
 // This action selects a patch from the drop down and sends 'this' data-dd-id to patch Object by using setPatchId
 // Also send final data-dd-id to the comparePatchIds as param.
@@ -104,7 +119,6 @@ $('.subMenu a').click(function() {
 	1. removes the 'showThisTable' class if found then adds the 'hideThisTable' class to hide the tables */
 
 function comparePatchIds(getPatchInfo) {
-	alert('comparePatchIds '+getPatchInfo);
     var treeTables = $('.treeStructure table');
     for (var i = 0; i < treeTables.length; i++) {
         if (getPatchInfo.indexOf(treeTables[i].getAttribute('id')) !== -1) {
@@ -142,7 +156,7 @@ function createClassStructure(getPatchInfo) {
 function renderPatchTree(getFinalPatchId) {
 
     var patchIdSelector = getFinalPatchId;
-
+    
     $(patchIdSelector).treetable({
         expandable: true
     });
@@ -334,7 +348,6 @@ function renderPatchTree(getFinalPatchId) {
 
 	// This takes collections of arrays and renders results in a tree formats.
     function patchTreeResult(getDataIdCollection) {
-
         this.fileDataId;
         this.fileParentsDataId;
         this.fileParentRefinedDataId;
@@ -349,7 +362,6 @@ function renderPatchTree(getFinalPatchId) {
 
                 fileParentRefinedDataId = fileParentRefinedDataId + ((fileParentsDataId === 0) ? '': '-') + splitedFileDataId[fileParentsDataId];
                 $(patch.getPatchId()).treetable('expandNode', fileParentRefinedDataId);
-
                 $(patch.getPatchId() + " tr[data-tt-id ='" + fileParentRefinedDataId + "']").attr('data-add-tr', 'showThisTr');
                 $(patch.getPatchId() + " tr[data-add-tr!= 'showThisTr']").attr('data-add-tr', 'hideThisTr');
             }

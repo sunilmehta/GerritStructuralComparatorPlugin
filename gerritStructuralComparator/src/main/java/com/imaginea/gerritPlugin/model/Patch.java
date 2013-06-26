@@ -7,6 +7,18 @@ public class Patch {
 	private String patchType;
 	//private String fileData;
 	private String fileURL;
+	
+	public Patch(){
+		
+	}
+	
+	public Patch( com.google.gerrit.reviewdb.client.Patch patch, String fileURL){
+		this.patchFileName = patch.getFileName();
+		this.patchParentKey = patch.getKey().getParentKey().toString();
+		this.changeType = patch.getChangeType().name();
+		this.patchType = patch.getPatchType().name();
+		this.fileURL = fileURL;
+	}
 
 	public String getPatchFileName() {
 		return patchFileName;

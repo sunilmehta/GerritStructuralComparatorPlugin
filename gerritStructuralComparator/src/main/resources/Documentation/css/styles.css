@@ -15,6 +15,7 @@ a{
 a:hover{
 	color:rgba(54, 102, 197, 1);
 	text-decoration:none;
+	cursor: pointer;
 }
 
 body{
@@ -84,7 +85,6 @@ section.main{
 
 .mainContianer{
 		position:relative;
-		height:900px;
 		margin-left:10px;
 		overflow-y:auto;
 }
@@ -944,4 +944,77 @@ filter: progid:DXImageTransform.Microsoft.Shadow(Strength=17, Direction=225, Col
 
 .hideThisTable{
 		display:none;
+}
+
+#dialog_window_minimized_container {
+   position: fixed;
+   bottom: 0px;
+   right: 0px;
+   z-index: 10;
+}
+ 
+.dialog_window_minimized {
+   float: left;
+   padding: 5px 10px;
+   font-size: 12px;
+   cursor: pointer;
+   margin-right: 2px;
+   display: none;
+}
+ 
+.dialog_window_minimized .ui-icon {
+   display: inline-block !important;
+   position: relative;
+   top: 3px;
+   cursor: pointer;
+}
+ 
+.ui-dialog .ui-dialog-titlebar-minimize {
+   height: 18px;
+   width: 19px;
+   padding: 1px;
+   position: absolute;
+   right: 12px;
+   top: 15%;
+}
+ 
+.ui-dialog .ui-dialog-titlebar-minimize .ui-icon {
+   display: block;
+   margin: 1px;
+}
+ 
+.ui-dialog .ui-dialog-titlebar-minimize:hover, .ui-dialog .ui-dialog-titlebar-minimize:focus {
+   padding: 0;
+}
+
+table.gridtable {
+			font-family: verdana,arial,sans-serif;
+			font-size:11px;
+			color:#333333;
+			width: 100%;
+			border-width: 1px;
+			border-color: #666666;
+			border-collapse: collapse;
+}
+table.gridtable th {
+			border-width: 1px;
+			padding: 8px;
+			border-style: solid;
+			border-color: #666666;
+			background-color: #dedede;
+}
+table.gridtable td {
+			border-width: 1px;
+			padding: 8px;
+			border-style: solid;
+			border-color: #666666;
+			background-color: #ffffff;
+}
+.page{
+			margin:5px;
+}
+.hover { 
+			background-color: #106166; 
+			color: #fff; 
+			cursor:pointer;
 }
