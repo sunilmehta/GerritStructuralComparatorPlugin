@@ -78,7 +78,9 @@ public class DeclarationConstructorUtil {
 		methodNode.setLineNum(compilationUnit.getLineNumber(declaration.getStartPosition()));
 		methodNode.setModifiers(extractModifiers(declaration.modifiers()));
 		methodNode.setParameters(extractMethodParameters(declaration.parameters()));
-		methodNode.setReturnType(declaration.getReturnType2().toString());
+		if( null != declaration.getReturnType2()){
+			methodNode.setReturnType(declaration.getReturnType2().toString());
+		}
 		methodNode.setCompleteNodeValue(declaration.toString());
 		methodNode.setThrownExceptions(extractThrownExceptions(declaration.thrownExceptions()));
 
@@ -218,10 +220,18 @@ public class DeclarationConstructorUtil {
 	}
 
 	private static boolean areMethodTypeNodesSame(MethodDeclarationNode actual, MethodDeclarationNode expected, List<Type> subCommonChilds) {
-		if (!actual.getParameters().equals(expected.getParameters()))
-			return false;
-		if (!actual.getReturnType().equals(expected.getReturnType()))
-			return false;
+		
+		if( null != actual.getParameters()){
+			if (!actual.getParameters().equals(expected.getParameters()))
+				return false;
+		}
+		
+		
+		if( null != actual.getReturnType() ){
+			if (!actual.getReturnType().equals(expected.getReturnType()))
+				return false;
+		}
+		
 
 		List<String> actualModifiers = actual.getModifiers();
 		List<String> expectedModifiers = expected.getModifiers();
