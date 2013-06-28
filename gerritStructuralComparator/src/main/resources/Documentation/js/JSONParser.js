@@ -43,9 +43,23 @@ function createStatusTable(commitList){
 function PatchComparison(patchSetUrl) {
 	document.getElementById("containerId").style.display = "none";
 	document.getElementById("wait").style.display = "block";
+	
+	if( patchSetUrl == '' ){
+		if( lastClickedUrl != null ){
+			var urlPath = lastClickedUrl.split(",");
+			if( urlPath.length == 3 ){
+				patchSetUrl = urlPath[0] + ",1," + urlPath[2];
+			}
+			patchSetUrl = patchSetUrl.substring(0,patchSetUrl.length-1 ).concat('1');
+		}
+	}
+	
 	if (patchSetUrl == lastClickedUrl) {
 		baseVersion = "No Difference Found";
 		patchVersion = "";
+		diffUsingJS(baseVersion, patchVersion);
+		document.getElementById("containerId").style.display = "block";
+		document.getElementById("wait").style.display = "none";
 	} else {
 		if (window.XMLHttpRequest) {
 			xmlhttp = new XMLHttpRequest();
@@ -55,11 +69,10 @@ function PatchComparison(patchSetUrl) {
 		xmlhttp.onreadystatechange = function() {
 			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 				var comparatorResult = null;
-				var result = null;
+
 				comparatorResult = xmlhttp.responseText;
-				var javaCode = /JavaCode/g;
-				result = javaCode.test(comparatorResult);
-				if (result == true) {
+				
+				if ( comparatorResult.indexOf("JavaCode") === 0 ) {
 					$('#ModificationDetails').treetable('destroy');
 					document.getElementById("ModificationDetails").innerHTML = '';
 					baseVersion = "";
@@ -82,7 +95,6 @@ function PatchComparison(patchSetUrl) {
 // This Method fetches the data from the provided URL
 function fetchDatafromURL(url, patchNo) {
 	var comparatorResult = "";
-	var result = "";
 	var xmlhttp;
 
 	document.getElementById("containerId").style.display = "none";
@@ -98,12 +110,9 @@ function fetchDatafromURL(url, patchNo) {
 	xmlhttp.onreadystatechange = function() {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 			comparatorResult = xmlhttp.responseText;
-			var javaCode = /JavaCode/g;
-			result = null;
-			result = javaCode.test(comparatorResult);
-
-			var patchSetLabel = "";
-			var baseSetLabel = "";
+			
+			var patchSetLabel = "<a onclick=\"PatchComparison('')\">Base </a>";
+			var baseSetLabel = "<a onclick=\"PatchComparison('')\">Base </a>";
 			for ( var i = 0; i < multiArray.length; i++) {
 				patchSetLabel += " ";
 				patchSetLabel += multiArray[i][patchNo];
@@ -112,7 +121,7 @@ function fetchDatafromURL(url, patchNo) {
 			document.getElementById("patchSetLabel1").innerHTML = patchSetLabel;
 			document.getElementById("patchSetLabel2").innerHTML = patchSetLabel;
 
-			if (result == true) {
+			if ( comparatorResult.indexOf("JavaCode") === 0 ) {
 				$('#ModificationDetails').treetable('destroy');
 				document.getElementById("ModificationDetails").innerHTML = '';
 				baseVersion = "";
@@ -203,7 +212,7 @@ function parseJSONResponse(comparatorResult) {
 							.push(parsedJSON.types[i].commonChilds[k].declarations[1].name);
 				} else if (parsedJSON.types[i].commonChilds[k].diff == 1) {
 					modifiedMethod
-							.push(parsedJSON.types[i].commonChilds[k].declarations[1].name);
+							.push(parsedJSON.types[i].commonChilds[k].declarations[0].name);
 				}
 			}
 		}
@@ -271,8 +280,14 @@ $(document).jkey('f6', function() {
 	row = 'Marker' + counter;
 	var _offset = $(marker).offset();
 	var _topoffset = _offset.top;
-	var w = $(".vScroll");
-	$(".vScroll").scrollTop(_topoffset - w.height() / 2);
+	var className = document.getElementById('diffoutput').className;
+	if( className == "vScroll" ){
+		var w = $(".vScroll");
+		$(".vScroll").scrollTop(_topoffset - w.height() / 2);
+	}else{
+		var w = $(".vScrollFullScreen");
+		$(".vScrollFullScreen").scrollTop(_topoffset - w.height() / 2);
+	}
 });
 
 $(document).jkey('f7', function() {
@@ -287,8 +302,14 @@ $(document).jkey('f7', function() {
 	row = 'Marker' + counter;
 	var _offset = $(marker).offset();
 	var _topoffset = _offset.top;
-	var w = $(".vScroll");
-	$(".vScroll").scrollTop(_topoffset - w.height() / 2);
+	var className = document.getElementById('diffoutput').className;
+	if( className == "vScroll" ){
+		var w = $(".vScroll");
+		$(".vScroll").scrollTop(_topoffset - w.height() / 2);
+	}else{
+		var w = $(".vScrollFullScreen");
+		$(".vScrollFullScreen").scrollTop(_topoffset - w.height() / 2);
+	}
 
 });
 
@@ -314,8 +335,15 @@ $(document).ready(function() {
 		row = 'Marker' + counter;
 		var _offset = $(marker).offset();
 		var _topoffset = _offset.top;
-		var w = $(".vScroll");
-		$(".vScroll").scrollTop(_topoffset - w.height() / 2);
+		var className = document.getElementById('diffoutput').className;
+		if( className == "vScroll" ){
+			var w = $(".vScroll");
+			$(".vScroll").scrollTop(_topoffset - w.height() / 2);
+		}else{
+			var w = $(".vScrollFullScreen");
+			$(".vScrollFullScreen").scrollTop(_topoffset - w.height() / 2);
+		}
+		
 	});
 
 	$("#markerPrev").click(function() {
@@ -330,8 +358,14 @@ $(document).ready(function() {
 		row = 'Marker' + counter;
 		var _offset = $(marker).offset();
 		var _topoffset = _offset.top;
-		var w = $(".vScroll");
-		$(".vScroll").scrollTop(_topoffset - w.height() / 2);
+		var className = document.getElementById('diffoutput').className;
+		if( className == "vScroll" ){
+			var w = $(".vScroll");
+			$(".vScroll").scrollTop(_topoffset - w.height() / 2);
+		}else{
+			var w = $(".vScrollFullScreen");
+			$(".vScrollFullScreen").scrollTop(_topoffset - w.height() / 2);
+		}
 	});
 });
 

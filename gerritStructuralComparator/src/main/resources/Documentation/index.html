@@ -59,6 +59,11 @@
 			      $('#headerSection').show();
 			      $('#dataContainer').hide();
 			      dialog_element.open();
+			      var tr=$('#gerritCommitStatus tbody tr');
+				  for(var i=0;i<= 14;i++)
+				  {
+				  	$(tr[i]).show();
+				  }
 			   });
 			};
 		</script>
