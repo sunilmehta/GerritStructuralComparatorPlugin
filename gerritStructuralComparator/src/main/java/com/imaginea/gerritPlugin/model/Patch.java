@@ -5,7 +5,6 @@ public class Patch {
 	private String patchParentKey;
 	private String changeType;
 	private String patchType;
-	//private String fileData;
 	private String fileURL;
 	
 	public Patch(){
@@ -51,14 +50,6 @@ public class Patch {
 	public void setPatchType(String patchType) {
 		this.patchType = patchType;
 	}
-
-	/*public String getFileData() {
-		return fileData;
-	}
-
-	public void setFileData(String fileData) {
-		this.fileData = fileData;
-	}*/
 
 	public String getFileURL() {
 		return fileURL;

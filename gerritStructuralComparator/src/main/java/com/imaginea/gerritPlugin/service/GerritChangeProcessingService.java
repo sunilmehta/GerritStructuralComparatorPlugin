@@ -30,7 +30,7 @@ public class GerritChangeProcessingService {
 		try {
 			reviewDb = dbFactory.open();
 		} catch (OrmException e) {
-			log.error("OrmException::"+e);
+			log.error("OrmException::",e);
 		}
 		List<ChangeID> changeIdList = new ArrayList<ChangeID>();
 		ChangeID idList = null;
@@ -45,7 +45,7 @@ public class GerritChangeProcessingService {
 			}
 			
 		} catch (OrmException e) {
-			log.error("OrmException::"+e);
+			log.error("OrmException::",e);
 		}
 		reviewDb.close();
 		log.debug("ChangeId List Size::"+changeIdList.size());
@@ -61,7 +61,7 @@ public class GerritChangeProcessingService {
 		try {
 			reviewDb = dbFactory.open();
 		} catch (OrmException e) {
-			log.error("OrmException::"+e);
+			log.error("OrmException::",e);
 		}
 		requestHostName = reqHostName;
 		Change custChange = null;
@@ -88,9 +88,9 @@ public class GerritChangeProcessingService {
 			}
 			
 		} catch (OrmException e) {
-			log.error("OrmException::"+e);
+			log.error("OrmException::",e);
 		} catch (PatchListNotAvailableException e) {
-			log.error("PatchListNotAvailableException::"+e);
+			log.error("PatchListNotAvailableException::",e);
 		}
 		if(null != reviewDb){
 			reviewDb.close();

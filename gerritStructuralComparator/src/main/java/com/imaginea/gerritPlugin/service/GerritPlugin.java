@@ -102,7 +102,7 @@ public class GerritPlugin extends HttpServlet {
 			}
 			log.debug("Structural Comparator Result \n:: " + comparisonResult );
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Unknown Exception ", e);
 			out.write("Exceptions being thrown");
 		} finally {
 			out.close();
@@ -117,7 +117,7 @@ public class GerritPlugin extends HttpServlet {
 			URL url = cLoader.getResource( fileName );
 			return url;
 		} catch (ClassNotFoundException e) {
-			log.error("ClassNotFound "+e);
+			log.error("ClassNotFound ", e);
 		}
 		return null;
 	}
@@ -130,13 +130,13 @@ public class GerritPlugin extends HttpServlet {
 			patchFile = FileDataRetrivalService.getFileDataStream(patchUrl);
 			baseFile = FileDataRetrivalService.getFileDataStream(baseUrl);
 		} catch ( MalformedURLException e ) {
-			log.error("Incorrect Url "+ e);
+			log.error("Incorrect Url ", e);
 		} catch ( Exception e ) {
 			baseFile = "";
 			if( null != out){
 				out.write("JavaCode \n"+patchFile);
 			}
-			log.error( "Exception during file Retrieval " + e.getMessage() ,e.getCause());
+			log.error( "Exception during file Retrieval ", e);
 			return null;
 		}
 
@@ -145,8 +145,8 @@ public class GerritPlugin extends HttpServlet {
 		try{
 			compareResult = comparatorImpl.compare( baseFile, patchFile );
 		}catch (Exception e) {
-			log.error( "Exception during file Comparison " + e.getMessage() ,e.getCause());
-			out.write("JavaCode \n"+e.getMessage());
+			log.error( "Exception during file Comparison ", e);
+			out.write("JavaCode \n"+e);
 			return null;
 		}
 		
