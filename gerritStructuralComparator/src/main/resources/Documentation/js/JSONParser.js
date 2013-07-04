@@ -10,6 +10,10 @@ var modifiedMethod = [];
 
 var baseVersion = "", patchVersion = "";
 
+var baseChangeArray = new Array();
+
+var patchChangeArray = new Array();
+
 function getGerritCommitDetails(){
 	var xmlhttp;
 	
@@ -181,24 +185,47 @@ function parseJSONResponse(comparatorResult) {
 			baseVersion += '\n';
 			baseVersion += parsedJSON.types[i].declarations[0].completeNodeValue;
 			patchVersion += '\n';
-			modifiedMethod.push(parsedJSON.types[i].declarations[0].name);
+			changedFileTreeStructure += parsedJSON.types[i].declarations[0].name
+					+ "</span></td></tr>";
+			
 		} else if (parsedJSON.types[i].diff == -1) {
 			baseVersion += '\n';
 			patchVersion += '\n';
 			patchVersion += parsedJSON.types[i].declarations[1].completeNodeValue;
-			modifiedMethod.push(parsedJSON.types[i].declarations[1].name);
+			changedFileTreeStructure += parsedJSON.types[i].declarations[1].name
+					+ "</span></td></tr>";
+			
 		} else if (parsedJSON.types[i].diff == 10) {
-			baseVersion += '\n';
-			baseVersion += parsedJSON.types[i].declarations[0].completeNodeValue;
-			patchVersion += '\n';
-			patchVersion += parsedJSON.types[i].declarations[1].completeNodeValue;
 			changedFileTreeStructure += parsedJSON.types[i].declarations[0].name
 					+ "</span></td></tr>";
 
 			for ( var k = 0; k < parsedJSON.types[i].commonChilds.length; k++) {
 				if (parsedJSON.types[i].commonChilds[k].diff == 10) {
-					modifiedMethod
-							.push(parsedJSON.types[i].commonChilds[k].declarations[0].name);
+					var key = null;
+					if( parsedJSON.types[i].commonChilds[k].declarations[0].hasOwnProperty('parameters') ){
+						var parameter =  parsedJSON.types[i].commonChilds[k].declarations[0].parameters;
+						parameter  = parameter.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+						key = parsedJSON.types[i].commonChilds[k].declarations[0].name + '( ' + parameter + ')';
+						changedFileTreeStructure += "<tr data-tt-id='1-1-" + (i + 1)
+									+ "' data-tt-parent-id='1-1'><td><span class=\"fileModified\"><a onclick=\"diffSelectedChange(this)\" >" + parsedJSON.types[i].commonChilds[k].declarations[0].name + '( ' + parameter + ')'
+									+ "</a></span></td></tr>"
+						
+					}else{
+						key = parsedJSON.types[i].commonChilds[k].declarations[0].name;
+						changedFileTreeStructure += "<tr data-tt-id='1-1-" + (i + 1)
+								+ "' data-tt-parent-id='1-1'><td><span class=\"fileModified\"><a onclick=\"diffSelectedChange(this)\" >" + parsedJSON.types[i].commonChilds[k].declarations[0].name
+								+ "</a></span></td></tr>"
+					}
+					//Selecting Modified method start
+					baseVersion += '\n';
+			        baseVersion += parsedJSON.types[i].commonChilds[k].declarations[0].completeNodeValue;
+			        patchVersion += '\n';
+			        patchVersion += parsedJSON.types[i].commonChilds[k].declarations[1].completeNodeValue;
+			      //Selecting Modified method End
+			        
+			        baseChangeArray[key] = parsedJSON.types[i].commonChilds[k].declarations[0].completeNodeValue;
+			        patchChangeArray[key] = parsedJSON.types[i].commonChilds[k].declarations[1].completeNodeValue;
+			        
 					var commonChilds = parsedJSON.types[i].commonChilds[k].commonChilds;
 					for ( var x = 0; x < commonChilds.length; x++) {
 						if (commonChilds[x].diff == 1) {
@@ -208,20 +235,52 @@ function parseJSONResponse(comparatorResult) {
 						}
 					}
 				} else if (parsedJSON.types[i].commonChilds[k].diff == -1) {
-					modifiedMethod
-							.push(parsedJSON.types[i].commonChilds[k].declarations[1].name);
+					var key = null;
+					if( parsedJSON.types[i].commonChilds[k].declarations[1].hasOwnProperty('parameters') ){
+						var parameter =  parsedJSON.types[i].commonChilds[k].declarations[1].parameters;
+						parameter  = parameter.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+						key = parsedJSON.types[i].commonChilds[k].declarations[1].name  + '( ' + parameter + ')';
+						changedFileTreeStructure += "<tr data-tt-id='1-1-" + (i + 1)
+								+ "' data-tt-parent-id='1-1'><td><span class=\"fileNew\"><a onclick=\"diffSelectedChange(this)\" >" + parsedJSON.types[i].commonChilds[k].declarations[1].name  + '( ' + parameter + ')'
+								+ "</a></span></td></tr>"
+					}else{
+						key = parsedJSON.types[i].commonChilds[k].declarations[1].name;
+						changedFileTreeStructure += "<tr data-tt-id='1-1-" + (i + 1)
+								+ "' data-tt-parent-id='1-1'><td><span class=\"fileNew\"><a onclick=\"diffSelectedChange(this)\" >" + parsedJSON.types[i].commonChilds[k].declarations[1].name
+								+ "</a></span></td></tr>"
+					}
+					
+					baseVersion += '\n';
+					patchVersion += '\n';
+			        patchVersion += parsedJSON.types[i].commonChilds[k].declarations[1].completeNodeValue;
+			        
+			        baseChangeArray[key] = "";
+			        patchChangeArray[key] = parsedJSON.types[i].commonChilds[k].declarations[1].completeNodeValue;
 				} else if (parsedJSON.types[i].commonChilds[k].diff == 1) {
-					modifiedMethod
-							.push(parsedJSON.types[i].commonChilds[k].declarations[0].name);
+					var key = null;
+					if( parsedJSON.types[i].commonChilds[k].declarations[0].hasOwnProperty('parameters') ){
+						var parameter =  parsedJSON.types[i].commonChilds[k].declarations[0].parameters;
+						parameter  = parameter.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+						key = parsedJSON.types[i].commonChilds[k].declarations[0].name + '(' + parameter +')';
+						changedFileTreeStructure += "<tr data-tt-id='1-1-" + (i + 1)
+								+ "' data-tt-parent-id='1-1'><td><span class=\"fileDelete\"><a onclick=\"diffSelectedChange(this)\" >" + parsedJSON.types[i].commonChilds[k].declarations[0].name + '(' + parameter +')'
+								+ "</a></span></td></tr>"
+					}else{
+						key = parsedJSON.types[i].commonChilds[k].declarations[0].name;
+						changedFileTreeStructure += "<tr data-tt-id='1-1-" + (i + 1)
+								+ "' data-tt-parent-id='1-1'><td><span class=\"fileDelete\"><a onclick=\"diffSelectedChange(this)\" >" + parsedJSON.types[i].commonChilds[k].declarations[0].name
+								+ "</a></span></td></tr>"
+					}
+					
+					baseVersion += '\n';
+					patchVersion += '\n';
+			        baseVersion += parsedJSON.types[i].commonChilds[k].declarations[0].completeNodeValue;
+			        
+			        baseChangeArray[key] = parsedJSON.types[i].commonChilds[k].declarations[0].completeNodeValue;
+			        patchChangeArray[key] = "";
 				}
 			}
 		}
-	}
-
-	for ( var i = 0; i < modifiedMethod.length; i++) {
-		changedFileTreeStructure += "<tr data-tt-id='1-1-" + (i + 1)
-				+ "' data-tt-parent-id='1-1'><td><span class=\"javaChangesFile\">" + modifiedMethod[i]
-				+ "</span></td></tr>"
 	}
 
 	changedFileTreeStructure += "</tbody></table>"
@@ -437,4 +496,9 @@ function getChangeIdDetails( key ) {
 	
 	xmlhttp.open("GET", "../gerritPlugin?id="+ key, false);
 	xmlhttp.send();
+}
+
+function diffSelectedChange( anchor ){
+	var key = anchor.innerHTML;
+	diffUsingJS(baseChangeArray[key], patchChangeArray[key] );
 }

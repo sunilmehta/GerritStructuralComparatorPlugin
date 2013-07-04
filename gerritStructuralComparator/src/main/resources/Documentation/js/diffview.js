@@ -165,7 +165,7 @@ diffview = {
 				
 				toprows.push(node = document.createElement("tr"));
 				// set id to table to identify changes and to navigate using next/previous button
-				if( change !="equal" ){
+				if( change !="equal" && i == 0 ){
 					node.id = "Marker"+ counter;
 					counter++;
 				}
