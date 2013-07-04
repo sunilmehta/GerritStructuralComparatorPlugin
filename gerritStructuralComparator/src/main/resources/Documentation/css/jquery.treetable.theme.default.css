@@ -57,8 +57,16 @@ table.treetable span.compilationUnit {
   background-image: url(../images/compilationUnit.png);
 }
 
-table.treetable span.javaChangesFile {
-  background-image: url(../images/JavaChanges.png);
+table.treetable span.fileNew {
+  background-image: url(../images/fileNew.png);
+}
+
+table.treetable span.fileDelete {
+  background-image: url(../images/fileDelete.png);
+}
+
+table.treetable span.fileModified {
+  background-image: url(../images/fileModified.png);
 }
 
 table.treetable .image span.file{
