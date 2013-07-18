@@ -61,7 +61,7 @@ function PatchComparison(patchSetUrl) {
 	if (patchSetUrl == lastClickedUrl) {
 		baseVersion = "No Difference Found";
 		patchVersion = "";
-		diffUsingJS(baseVersion, patchVersion);
+		diffUsingJS(baseVersion, patchVersion, null);
 		document.getElementById("containerId").style.display = "block";
 		document.getElementById("wait").style.display = "none";
 	} else {
@@ -81,7 +81,7 @@ function PatchComparison(patchSetUrl) {
 					document.getElementById("ModificationDetails").innerHTML = '';
 					baseVersion = "";
 					patchVersion = comparatorResult.replace('JavaCode', '');
-					diffUsingJS(baseVersion, patchVersion);
+					diffUsingJS(baseVersion, patchVersion, null);
 				} else {
 					parseJSONResponse(comparatorResult);
 				}
@@ -130,12 +130,14 @@ function fetchDatafromURL(url, patchNo) {
 				document.getElementById("ModificationDetails").innerHTML = '';
 				baseVersion = "";
 				patchVersion = comparatorResult.replace('JavaCode', '');
-				diffUsingJS(baseVersion, patchVersion);
+				diffUsingJS(baseVersion, patchVersion, null);
 			} else {
 				parseJSONResponse(comparatorResult);
 			}
 			document.getElementById("wait").style.display = "none";
 			document.getElementById("containerId").style.display = "block";
+			document.getElementById("HideDetail").style.display = "none";
+			document.getElementById("ShowDetail").style.display = "block";
 		}
 		
 	}
@@ -153,7 +155,8 @@ function parseJSONResponse(comparatorResult) {
 	patchVersion = "";
 	modifiedMethod = [];
 	var changedFileTreeStructure = "<table id=\"ModificationDetails\" cellpadding=\"0\" cellspacing=\"0\"><tbody><tr data-tt-id='1'><td><span class='compilationUnit'>Compilation Unit </span></td></tr> <tr data-tt-id='1-1' data-tt-parent-id='1'><td><span class='javaIcon'>";
-
+	
+	var draftMsgArray = parsedJSON.draftMessage;
 	// package name changes
 	if (parsedJSON.pkg.diff == -1 || parsedJSON.pkg.diff == 10
 			|| parsedJSON.pkg.diff == 1) {
@@ -292,13 +295,13 @@ function parseJSONResponse(comparatorResult) {
 		baseVersion = "No changes Found";
 		patchVersion = "No changes Found";
 	}
-	diffUsingJS(baseVersion, patchVersion);
+	diffUsingJS(baseVersion, patchVersion, draftMsgArray);
 	$(".hide_Rows").hide();
 	$('#ModificationDetails').treetable('destroy');
 	createClassStructure('#ModificationDetails');
 }
 
-function diffUsingJS(baseVersion, patchVersion) {
+function diffUsingJS(baseVersion, patchVersion, draftMsgArray) {
 	var $ = dojo.byId;
 	var url = window.location.toString().split("#")[0];
 	var base = difflib.stringAsLines(baseVersion);
@@ -316,7 +319,8 @@ function diffUsingJS(baseVersion, patchVersion) {
 		baseTextName : "Base Set",
 		newTextName : "Patch Set",
 		contextSize : contextSize,
-		viewType : 0
+		viewType : 0,
+		draftMsgArray : draftMsgArray
 	}));
 	for ( var i = 0; i < opcodes.length; i++) {
 		code = opcodes[i];
@@ -500,5 +504,178 @@ function getChangeIdDetails( key ) {
 
 function diffSelectedChange( anchor ){
 	var key = anchor.innerHTML;
-	diffUsingJS(baseChangeArray[key], patchChangeArray[key] );
+	diffUsingJS(baseChangeArray[key], patchChangeArray[key], null );
+}
+
+function displayCommentHolder(e)
+{
+	var table=document.getElementById("diffOutTable");
+	var rowIndex = e.target.parentNode.rowIndex;
+	var cellIndex = e.target.cellIndex;
+    var row=table.insertRow(rowIndex);
+    var textarea = document.createElement('textarea');
+    textarea.setAttribute('rows', '4');
+    textarea.setAttribute('cols', '40');
+    
+    var paragraph = document.createElement('p');
+    paragraph.setAttribute('style', 'padding-bottom: 10px;font-family: sans-serif;');
+    
+    var cell1=row.insertCell(0);
+    cell1.setAttribute('class', 'lineNumber');
+    var cell2=row.insertCell(1);
+    cell2.setAttribute('style', 'background: #e5ecf9');
+    var cell3=row.insertCell(2);
+    cell3.setAttribute('class', 'lineNumber');
+    var cell4=row.insertCell(3);
+    cell4.setAttribute('style', 'background: #e5ecf9');
+    
+    var draft = document.createElement('div');
+    draft.setAttribute('style', 'font-weight: bold;font-family: sans-serif;padding-bottom: 4px;');
+    draft.innerHTML = "(Draft)";
+    
+    var divTag = document.createElement("div");
+    divTag.id = "commentPanelButtons";
+    divTag.setAttribute('style', 'padding-bottom: 5px;');
+    
+    var saveButton = document.createElement("Button");
+    saveButton.innerHTML = "Save";
+    saveButton.setAttribute('class', 'panelButton'); 
+    saveButton.setAttribute('onclick','saveReviewerComment(event)');
+    divTag.appendChild(saveButton);
+    
+    var editButton = document.createElement("Button");
+    editButton.innerHTML = "Edit";
+    editButton.setAttribute('class', 'panelButton');
+    editButton.setAttribute('style', 'display: none;'); 
+    editButton.setAttribute('onclick','editReviwerComment(event)');
+    divTag.appendChild(editButton);
+    
+    var cancelButton = document.createElement("Button");
+    cancelButton.innerHTML = "Cancel";
+    cancelButton.setAttribute('class', 'panelButton'); 
+    cancelButton.setAttribute('style', 'display: none;');
+    cancelButton.setAttribute('onclick','cancel(event)');
+    divTag.appendChild(cancelButton);
+    
+    var discardButton = document.createElement("Button");
+    discardButton.innerHTML = "Discard";
+    discardButton.setAttribute('class', 'panelButton'); 
+    discardButton.setAttribute('onclick','deleteTableRow(event)');
+    divTag.appendChild(discardButton);
+    
+    if( cellIndex == 1 ){
+    	cell2.appendChild(draft);
+        cell2.appendChild(textarea);
+        cell2.appendChild(paragraph);
+        cell2.appendChild(divTag);
+    }else{
+    	cell4.appendChild(draft);
+        cell4.appendChild(textarea);
+        cell4.appendChild(paragraph);
+        cell4.appendChild(divTag);
+    }
+}
+
+
+function cancel(e){
+	var tableColumn = e.target.parentNode.parentNode;
+	var element = tableColumn.getElementsByTagName('textarea');
+	element[0].style.display = "none";
+	
+	var p = tableColumn.getElementsByTagName('p');
+	p[0].style.display = "block";
+	
+	var divTag = e.target.parentNode;
+	var buttons = divTag.getElementsByTagName('button');
+	buttons[0].style.display = "none";
+	buttons[1].style.display = "inline";
+	buttons[2].style.display = "none";
+	buttons[3].style.display = "none";
+}
+
+
+function deleteTableRow(e){
+	var rowIndex = e.target.parentNode.parentNode.parentNode.rowIndex;
+	var cellIndex = e.target.parentNode.parentNode.cellIndex; 
+	var tableColumn = e.target.parentNode.parentNode;
+	var element = tableColumn.getElementsByTagName('textarea');
+	var draftMessage = element[0].value;
+	document.getElementById("diffOutTable").deleteRow(rowIndex);
+	if( draftMessage != ''){
+		var xmlhttp;
+		
+		if (window.XMLHttpRequest) {
+			xmlhttp = new XMLHttpRequest();
+		} else { 
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+				var jsonData = xmlhttp.responseText;
+			}
+		}
+		
+		xmlhttp.open("GET", "../patchDetailService?lineNumber=" + rowIndex
+				+ "&side=" + cellIndex + "&message=" + draftMessage +"&changeDetail="+lastClickedUrl+"&flag=discard", true);
+		xmlhttp.send();
+	}
+	
+}
+
+
+function editReviwerComment(e){
+	var tableColumn = e.target.parentNode.parentNode;
+	var element = tableColumn.getElementsByTagName('textarea');
+	element[0].style.display = "block";
+	
+	var p = tableColumn.getElementsByTagName('p');
+	p[0].style.display = "none";
+	
+	element[0].value = p[0].innerHTML;
+	
+	var divTag = e.target.parentNode;
+	var buttons = divTag.getElementsByTagName('button');
+	buttons[0].style.display = "inline";
+	buttons[1].style.display = "none";
+	buttons[2].style.display = "inline";
+	buttons[3].style.display = "inline";
+}
+
+
+function saveReviewerComment(e){
+	var rowIndex = e.target.parentNode.parentNode.parentNode.rowIndex;
+	var cellIndex = e.target.parentNode.parentNode.cellIndex; 
+	var tableColumn = e.target.parentNode.parentNode;
+	var element = tableColumn.getElementsByTagName('textarea');
+	var draftMessage = element[0].value;
+	
+	if( draftMessage != ''){
+		element[0].style.display = "none";
+		var p = tableColumn.getElementsByTagName('p');
+		p[0].style.display = "block";
+		p[0].innerHTML = draftMessage;
+		
+		var divTag = e.target.parentNode;
+		var buttons = divTag.getElementsByTagName('button');
+		buttons[0].style.display = "none";
+		buttons[3].style.display = "none";
+		buttons[2].style.display = "none";
+		buttons[1].style.display = "inline";
+		
+		var xmlhttp;
+		
+		if (window.XMLHttpRequest) {
+			xmlhttp = new XMLHttpRequest();
+		} else { 
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+				var jsonData = xmlhttp.responseText;
+			}
+		}
+		xmlhttp.open("GET", "../patchDetailService?lineNumber=" + rowIndex
+				+ "&side=" + cellIndex + "&message=" + draftMessage +"&changeDetail="+lastClickedUrl+"&flag=save", true);
+		xmlhttp.send();
+	}
 }
