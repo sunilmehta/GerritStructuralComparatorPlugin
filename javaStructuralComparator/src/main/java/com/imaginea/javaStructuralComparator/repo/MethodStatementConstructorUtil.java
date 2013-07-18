@@ -15,7 +15,6 @@ import com.imaginea.javaStructuralComparator.domain.Type;
 import com.imaginea.javaStructuralComparator.domain.node.AbstractTypeDeclarationNode;
 import com.imaginea.javaStructuralComparator.domain.node.DeclarationNode;
 import com.imaginea.javaStructuralComparator.domain.node.FieldDeclarationNode;
-//import com.imaginea.javaStructuralComparator.domain.node.Line;
 import com.imaginea.javaStructuralComparator.domain.node.LineNode;
 import com.imaginea.javaStructuralComparator.domain.node.MethodDeclarationNode;
 
