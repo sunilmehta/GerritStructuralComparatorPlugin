@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -17,13 +19,16 @@ import org.apache.log4j.PropertyConfigurator;
 import com.google.gerrit.extensions.annotations.Export;
 import com.google.gerrit.reviewdb.server.ReviewDb;
 import com.google.gerrit.server.patch.PatchListCache;
+import com.google.gerrit.server.project.ChangeControl;
 import com.google.gson.Gson;
 import com.google.gwtorm.server.SchemaFactory;
 import com.google.inject.Inject;
 import com.imaginea.gerritPlugin.model.ChangeDetails;
 import com.imaginea.gerritPlugin.model.ChangeID;
+import com.imaginea.gerritPlugin.utils.DraftUtil;
 import com.imaginea.gerritPlugin.utils.FileDataRetrivalService;
 import com.imaginea.javaStructuralComparator.domain.ComparisonResult;
+import com.imaginea.javaStructuralComparator.domain.DraftMessage;
 import com.imaginea.javaStructuralComparator.repo.ComparatorImpl;
 
 
@@ -35,14 +40,17 @@ public class GerritPlugin extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private final PatchListCache patchListCache;
 	private final SchemaFactory<ReviewDb> dbFactory;
+	private final ChangeControl.Factory changeControlFactory;
 	
 	private PrintWriter out = null;
 	
 	@Inject
 	public GerritPlugin(SchemaFactory<ReviewDb> dbFactory,
-			final PatchListCache patchListCache) {
+			final PatchListCache patchListCache,
+			ChangeControl.Factory changeControlFactory ) {
 		this.dbFactory = dbFactory;
 		this.patchListCache = patchListCache;
+		this.changeControlFactory = changeControlFactory;
 	}
 
 	@Override
@@ -144,6 +152,17 @@ public class GerritPlugin extends HttpServlet {
 		ComparisonResult compareResult = null;
 		try{
 			compareResult = comparatorImpl.compare( baseFile, patchFile );
+			List<DraftMessage> draftMessage = DraftUtil.loadDraftMessage(dbFactory, changeControlFactory, patchUrl);
+			
+			Collections.sort(draftMessage, new Comparator<DraftMessage>() {
+				@Override
+				public int compare(DraftMessage o1, DraftMessage o2) {
+					return Integer.valueOf(o1.getLine()).compareTo(Integer.valueOf(o2.getLine()));
+				}
+			});
+			
+			compareResult.setDraftMessage(draftMessage);
+			log.debug("draftMessage Size:: "+draftMessage.size());
 		}catch (Exception e) {
 			log.error( "Exception during file Comparison ", e);
 			out.write("JavaCode \n"+e);

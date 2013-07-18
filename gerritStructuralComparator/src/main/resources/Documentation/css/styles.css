@@ -86,6 +86,7 @@ section.main{
 .mainContianer{
 		position:relative;
 		margin-left:10px;
+		overflow-x: hidden;
 		overflow-y:auto;
 }
 
@@ -321,11 +322,22 @@ background: #fdfdfd; /* for non-css3 browsers */
 
 
 .expandTree .treeStructure{
-    max-height: 433px;
-    min-height: 433px;
+    max-height: 200px;
+    min-height: 200px;
     overflow: auto;
 }
 
+.collapseTree .treeClassStructure{
+    max-height: 200px;
+    min-height: 200px;
+    overflow: auto;
+}
+
+.expandTree .treeClassStructure{
+    max-height: 200px;
+    min-height: 200px;
+    overflow: auto;
+}
 
 .liveStreamList{
 	min-height:200px;
@@ -1017,4 +1029,14 @@ table.gridtable td {
 			background-color: #106166; 
 			color: #fff; 
 			cursor:pointer;
+}
+#commentPanelButtons .panelButton{
+                margin: 0;
+	        margin-right: 2em;
+	        font-size: 7pt;
+	        padding: 1px;
+	        border-radius: 0px;
+	        text-transform: none;
+	        font-weight: normal;
+	        border: 1px outset #ccc;
 }
