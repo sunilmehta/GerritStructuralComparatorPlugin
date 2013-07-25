@@ -1,7 +1,10 @@
 package com.imaginea.javaStructuralComparator.test;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
@@ -41,8 +44,9 @@ public class StructuralComapareTest extends bac implements abc {
 	@Test
 	public final void assertPackageEqual() {
 		ComparatorImpl comparator = new ComparatorImpl();
-		ComparisonResult result = comparator.compare("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java",
-				"src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java");
+		ComparisonResult result = comparator.compare(
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"),
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"));
 		com.imaginea.javaStructuralComparator.domain.Package pkg = result.getPkg();
 		isPackageDifferent(pkg);
 
@@ -51,8 +55,9 @@ public class StructuralComapareTest extends bac implements abc {
 	@Test
 	public final void assertImportsEqual() {
 		ComparatorImpl comparator = new ComparatorImpl();
-		ComparisonResult result = comparator.compare("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java",
-				"src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java");
+		ComparisonResult result =comparator.compare(
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"),
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"));
 		List<Import> imports = result.getImports();
 		isImportsDifferent(imports);
 	}
@@ -67,12 +72,40 @@ public class StructuralComapareTest extends bac implements abc {
 			if (imp.getDiff() != 0)
 				Assert.fail("Imports are different: " + imp);
 	}
+	
+	private static String loadFile( String filePath ){
+		StringBuffer buffer = new StringBuffer();
+		BufferedReader br = null;
+		String sCurrentLine;
+		 
+		try {
+			br = new BufferedReader(new FileReader( filePath ));
+			while ((sCurrentLine = br.readLine()) != null) {
+				buffer.append(sCurrentLine+'\n');
+			}
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}  finally {
+			try {
+				if ( br != null )
+					br.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+		
+		return buffer.toString().trim();
+	}
 
 	@Test
 	public final void assertTypesEqual() {
 		ComparatorImpl comparator = new ComparatorImpl();
-		ComparisonResult result = comparator.compare("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java",
-				"src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java");
+		ComparisonResult result = comparator.compare(
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"),
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"));
 		List<Type> types = result.getTypes();
 		isTypesDifferent(types);
 	}
@@ -86,8 +119,9 @@ public class StructuralComapareTest extends bac implements abc {
 	@Test
 	public final void assertJavaFileStructuresEqual() {
 		ComparatorImpl comparator = new ComparatorImpl();
-		ComparisonResult result = comparator.compare("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java",
-				"src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java");
+		ComparisonResult result = comparator.compare(
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"),
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"));
 		isPackageDifferent(result.getPkg());
 		isImportsDifferent(result.getImports());
 		isTypesDifferent(result.getTypes());
@@ -95,8 +129,9 @@ public class StructuralComapareTest extends bac implements abc {
 
 	static void testTypes() {
 		ComparatorImpl comparator = new ComparatorImpl();
-		ComparisonResult result = comparator.compare("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java",
-				"src/test/resources/TestJavaFiles/Testing.java.txt");
+		ComparisonResult result = comparator.compare(
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"),
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"));
 		List<Type> types = result.getTypes();
 		for (Type type : types) {
 			System.out.println(type);
@@ -105,8 +140,9 @@ public class StructuralComapareTest extends bac implements abc {
 
 	static void testImports() {
 		ComparatorImpl comparator = new ComparatorImpl();
-		ComparisonResult result = comparator.compare("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java",
-				"src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java");
+		ComparisonResult result = comparator.compare(
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"),
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"));
 		List<Import> imports = result.getImports();
 		for (Import imp : imports) {
 			System.out.println(imp);
@@ -116,8 +152,8 @@ public class StructuralComapareTest extends bac implements abc {
 	public static void main(String[] args) {
 		ComparatorImpl comparator = new ComparatorImpl();
 		ComparisonResult result12 = comparator.compare(
-				"F:/Workspace/structuralComaparator/src/test/java/com/imaginea/structuralComaparator/test/StructuralComapareTest.java",
-				"F:/Workspace/structuralComaparator/src/test/java/com/imaginea/structuralComaparator/test/StructuralComapareTest.java");
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"),
+				loadFile("src/test/java/com/imaginea/javaStructuralComparator/test/StructuralComapareTest.java"));
 		Gson gson = new Gson();
 		String json = gson.toJson(result12);
 		try {
