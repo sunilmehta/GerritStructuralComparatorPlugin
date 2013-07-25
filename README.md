@@ -2,9 +2,6 @@ GerritStructuralComparatorPlugin
 ================================
 
 Introduction
-============
-
-JavaStructuralComparator
 ------------------------
  Structural Comparator, no matter what the order of property/procedure is, compares a property /procedure with the matching one based on the name of property/method. 
 
