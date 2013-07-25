@@ -41,6 +41,7 @@ public class FileDataRetrivalService {
 		HttpURLConnection urlConnection = null;
 		InputStream inputStream = null;
 		try {
+			byteArrayOutputStream = new ByteArrayOutputStream();
 			// create the new connection, configure and connect
 			urlConnection = (HttpURLConnection) url.openConnection();
 			urlConnection.setRequestMethod("GET");
@@ -60,7 +61,6 @@ public class FileDataRetrivalService {
 
 				// at-most one file is expected to present in the '.zip' file
 				if (!entry.isDirectory() && extracted <= 1) {
-					byteArrayOutputStream = new ByteArrayOutputStream();
 					// modify buffer size according to the requirement
 					byte[] buffer = new byte[BUFFER_SIZE];
 					int count = 0;

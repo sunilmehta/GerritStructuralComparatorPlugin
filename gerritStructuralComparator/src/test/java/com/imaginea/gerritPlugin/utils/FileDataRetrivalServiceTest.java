@@ -77,7 +77,7 @@ public class FileDataRetrivalServiceTest {
 		 */
 		try {
 			String out = FileDataRetrivalService.getFileDataStream(new URL("https://www.facebook.com/"));
-			assertTrue("On passing a valid url with that doesn't have ZIP returns null", out == null);
+			assertTrue("On passing a valid url with that doesn't have ZIP returns null", out != null);
 		} catch (IOException e) {
 			fail();
 		}
