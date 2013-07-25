@@ -25,7 +25,7 @@ In order to build GerritPlugin you will need the following applications:
 To clone the GerritPlugin repository, use git clone:
 
 <pre>
- git clone https://github.com/SpringSource/wavemaker.git
+ git clone git@github.com:sans-sense/GerritStructuralComparatorPlugin.git
 </pre>
 
 The resultant jar file can be copied to your testSite/Plugins folder.
