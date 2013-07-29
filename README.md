@@ -1,32 +1,27 @@
-GerritStructuralComparatorPlugin
-================================
+#Gerrit-Compare-Plugin
+Diff tool designed for "Structural Programming"
 
-Introduction
-------------------------
- Structural Comparator, no matter what the order of property/procedure is, compares a property /procedure with the matching one based on the name of property/method. 
+-------------------------
 
-        
+##Introduction
 
-Benefit of JavaStructuralComparator over Line-by-Line Comparator
-* General line by line comparator does not use any sought of semantics for the comparison. It checks for the string pattern in a particular line. On the other hand Comparing Java files (which has syntax and semantics) on basis of string pattern alone does not help .  For a java file reordering of 2 procedures (method) does not make any difference for JavaStructuralComparator.
-* If the java code is formatted by a formatter plugin or default eclipse code formatter, it will show changes in Line-by-Line comparator while it shows no difference in JavaStructuralComparator
-* Structural Comparator will not show any changes, until no change to the code. 
-* In case of method reordering along with changes in reordered method, it will only show the difference for the code changed.
-* It will compare modified module instead of whole class file. So User require to navigate through changes.
+Gerrit-Compare-Plugin makes reviews easier by showing changes by selected property/Method name in a side-by-side display, and allowing inline comments to be added by any reviewer. This plugin show changes by comparing Property/Method with the matching one, no matter what the order of property/Method is.
 
 
-Building
---------
-In order to build GerritPlugin you will need the following applications:
+##Features
 
-* Java JDK 6 (http://www.oracle.com/technetwork/java/javase/downloads/index.html).
-* Apache Maven 3.x (http://maven.apache.org/)
+Following are some of the main features of Gerrit-Compare-Plugin:
 
-To clone the GerritPlugin repository, use git clone:
+- Refactor detection. It can find renamed, moved, reordered, wrapped, lifted, combined or fragmented code. Structured Difference allows focusing on the actual changes because it ignores location. Compare this for example with the regular file based difference that reports the entire method as new and deleted and therefore making the actual changes untraceable.
+- Format insensitivity. The comparison result will not be affected by linebreaks or whitespaces.
+- Navigation tree. The Navigation tree shows a hierarchal overview of changed, added and removed entities. This allows fast navigation to inspect change details.
+- Comprehensible output. The interactive UI helps users to navigate and understand changes efficiently.
 
-<pre>
- git clone git@github.com:sans-sense/GerritStructuralComparatorPlugin.git
-</pre>
 
-The resultant jar file can be copied to your testSite/Plugins folder.
+##Supported Languages
 
+Currently, Gerrit-Compare-Plugin can parse only Java language. We will include parser for other Structural Programming language in future.
+
+
+##Bugs
+If you find an issue, let us know [here](https://github.com/sans-sense/GerritStructuralComparatorPlugin/issues?page=1&state=open) 
